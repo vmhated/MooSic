@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Sparkles, Disc } from 'lucide-react';
+import React, { useRef, useCallback } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { ArrowLeft, ArrowRight, Disc3 } from 'lucide-react';
 import { MockTrack } from '../data/mockMusicData';
 
 interface ArtworkCarouselProps {
@@ -18,7 +18,6 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion();
-  const [isHovered, setIsHovered] = useState(false);
   const activeTrack = tracks[activeIndex] || tracks[0];
 
   const handleNext = useCallback(() => {
@@ -29,7 +28,6 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
     onActiveChange((activeIndex - 1 + tracks.length) % tracks.length);
   }, [activeIndex, tracks.length, onActiveChange]);
 
-  // Keyboard navigation when container is focused
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowRight') {
       e.preventDefault();
@@ -40,72 +38,67 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
     }
   };
 
-  // Subtle auto-advance every 6s if not hovering or reduced motion
-  useEffect(() => {
-    if (isHovered || shouldReduceMotion) return;
-    const interval = setInterval(() => {
-      handleNext();
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [isHovered, shouldReduceMotion, handleNext]);
-
   return (
-    <div
-      id="carousel-discovery"
+    <section
+      id="discover"
       ref={containerRef}
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-12 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple/50 rounded-3xl select-none"
-      aria-label="Carrossel de Descoberta Contínua MooSic"
+      className="relative w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-24 focus:outline-none select-none overflow-hidden"
+      aria-label="Descoberta de Músicas sem Limites"
     >
-      {/* Background Subtle Accent Glow based on active track */}
+      {/* Background Subtle Color Wash */}
       <motion.div
-        className="absolute inset-0 max-w-4xl mx-auto rounded-full blur-[110px] pointer-events-none opacity-20 -z-10 transition-all duration-700"
+        className="absolute top-1/2 left-1/3 -translate-y-1/2 w-[600px] h-[450px] rounded-full blur-[170px] pointer-events-none opacity-20 transition-colors duration-700 -z-10"
         style={{
-          background: `radial-gradient(circle at 50% 50%, ${activeTrack.accent} 0%, transparent 70%)`,
+          background: `radial-gradient(circle at center, ${activeTrack.accent} 0%, transparent 70%)`,
         }}
       />
 
-      {/* Header of the Carousel section */}
-      <div className="flex items-center justify-between mb-8 max-w-4xl mx-auto px-2">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-brand-purple" />
-            <span className="text-xs font-semibold uppercase tracking-widest text-text-muted">
-              Descoberta Contínua
+      {/* EDITORIAL SECTION HEADER */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 pb-6 border-b border-surface-border/60">
+        <div className="space-y-3 max-w-2xl">
+          {/* Section Marker */}
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-bold text-brand-purple">01</span>
+            <span className="h-[1px] w-6 bg-brand-purple" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+              Discovery Flow
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold font-sans text-white">
-            O fluxo sonoro nunca para
+
+          {/* Heading */}
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-sans text-white tracking-tight uppercase leading-[0.98]">
+            Explore the <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-text-primary to-text-secondary">
+              unseen sound.
+            </span>
           </h2>
         </div>
 
-        {/* Carousel Navigation Arrows */}
-        <div className="flex items-center gap-2">
+        {/* Tactile Navigation Buttons */}
+        <div className="flex items-center gap-3">
           <button
             onClick={handlePrev}
             aria-label="Faixa anterior"
-            className="w-10 h-10 rounded-full bg-surface-elevated border border-surface-border text-text-secondary hover:text-white hover:border-brand-purple/50 flex items-center justify-center transition-all active:scale-95 shadow-sm hover:shadow-glow"
+            className="w-12 h-12 rounded-2xl bg-surface-elevated border border-surface-border text-text-secondary hover:text-white hover:border-brand-purple/60 flex items-center justify-center transition-all duration-200 active:scale-95 shadow-sm"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5" />
           </button>
           <button
             onClick={handleNext}
             aria-label="Próxima faixa"
-            className="w-10 h-10 rounded-full bg-surface-elevated border border-surface-border text-text-secondary hover:text-white hover:border-brand-purple/50 flex items-center justify-center transition-all active:scale-95 shadow-sm hover:shadow-glow"
+            className="w-12 h-12 rounded-2xl bg-surface-elevated border border-surface-border text-text-secondary hover:text-white hover:border-brand-purple/60 flex items-center justify-center transition-all duration-200 active:scale-95 shadow-sm"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ArrowRight className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* 3D Visual Artwork Stage */}
-      <div className="relative min-h-[360px] sm:min-h-[420px] flex items-center justify-center overflow-hidden py-6">
-        <div className="relative flex items-center justify-center w-full max-w-4xl h-full">
+      {/* ASYMMETRIC 3D ARTWORK STAGE */}
+      <div className="relative min-h-[380px] sm:min-h-[460px] flex items-center justify-center py-4">
+        <div className="relative flex items-center justify-center w-full max-w-5xl h-full">
           {tracks.map((track, idx) => {
-            // Calculate relative offset from active index with looping
             let offset = idx - activeIndex;
             if (offset < -Math.floor(tracks.length / 2)) offset += tracks.length;
             if (offset > Math.floor(tracks.length / 2)) offset -= tracks.length;
@@ -115,9 +108,8 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
 
             if (!isVisible) return null;
 
-            // Visual metrics per offset
-            const xOffset = offset * (window.innerWidth < 640 ? 140 : 210);
-            const scale = isActive ? 1.05 : Math.max(0.72, 1 - Math.abs(offset) * 0.18);
+            const xOffset = offset * (typeof window !== 'undefined' && window.innerWidth < 640 ? 140 : 220);
+            const scale = isActive ? 1.06 : Math.max(0.74, 1 - Math.abs(offset) * 0.18);
             const rotateY = offset * -12;
             const zIndex = 20 - Math.abs(offset) * 5;
             const opacity = isActive ? 1 : Math.max(0.35, 1 - Math.abs(offset) * 0.35);
@@ -129,7 +121,7 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
                   onActiveChange(idx);
                   onTrackSelect?.(track);
                 }}
-                className="absolute cursor-pointer transition-shadow"
+                className="absolute cursor-pointer"
                 style={{ zIndex }}
                 initial={false}
                 animate={{
@@ -141,25 +133,24 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
                 transition={{
                   type: 'spring',
                   stiffness: 260,
-                  damping: 26,
-                  mass: 0.8,
+                  damping: 28,
+                  mass: 0.2,
                 }}
-                whileHover={!isActive ? { scale: scale * 1.06, opacity: 0.85 } : { scale: 1.08 }}
+                whileHover={!isActive ? { scale: scale * 1.04, opacity: 0.85 } : { scale: 1.08 }}
               >
-                {/* Artwork Card Container */}
+                {/* Artwork Frame */}
                 <div
-                  className={`relative w-48 h-48 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-2xl overflow-hidden bg-surface-elevated border transition-all duration-300 shadow-2xl ${
+                  className={`relative w-52 h-52 sm:w-72 sm:h-72 md:w-80 md:h-80 rounded-3xl overflow-hidden bg-surface-elevated border transition-all duration-300 ${
                     isActive
-                      ? 'border-brand-purple/60 shadow-[0_15px_40px_rgba(0,0,0,0.8)]'
+                      ? 'border-brand-purple shadow-2xl'
                       : 'border-surface-border hover:border-text-secondary/40'
                   }`}
                   style={{
                     boxShadow: isActive
-                      ? `0 20px 50px -10px rgba(${track.accentRgb}, 0.35), 0 0 0 1px rgba(139, 92, 246, 0.4)`
-                      : undefined,
+                      ? `0 20px 50px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(139, 92, 246, 0.4)`
+                      : '0 10px 25px rgba(0,0,0,0.5)',
                   }}
                 >
-                  {/* Album Cover Image */}
                   <img
                     src={track.artwork}
                     alt={`${track.title} - ${track.artist}`}
@@ -167,29 +158,24 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
                     loading="lazy"
                   />
 
-                  {/* Gradient Overlay for contrast */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-black/20" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/20 to-transparent" />
 
-                  {/* Active Indicator Top Tag */}
+                  {/* Top Badge */}
                   {isActive && track.badge && (
-                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-semibold text-brand-light uppercase tracking-wider">
+                    <div className="absolute top-4 left-4 px-3 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-xs font-semibold text-white uppercase tracking-wider">
                       {track.badge}
                     </div>
                   )}
 
-                  {/* Vinyl Texture Hint on side */}
-                  {isActive && (
-                    <div className="absolute top-3 right-3 text-white/50">
-                      <Disc className="w-4 h-4 animate-spin-slow" />
-                    </div>
-                  )}
-
-                  {/* Track Info Overlay at bottom */}
-                  <div className="absolute bottom-0 inset-x-0 p-4 space-y-1">
-                    <h3 className="text-sm sm:text-base font-bold text-white truncate font-sans drop-shadow-md">
+                  {/* Track Meta at Bottom */}
+                  <div className="absolute bottom-0 inset-x-0 p-5 space-y-1">
+                    <span className="text-xs font-semibold text-brand-purple uppercase tracking-wider">
+                      {track.genre}
+                    </span>
+                    <h3 className="text-base sm:text-lg font-bold text-white font-sans truncate">
                       {track.title}
                     </h3>
-                    <p className="text-xs text-text-secondary truncate font-sans">
+                    <p className="text-xs text-text-secondary font-sans truncate">
                       {track.artist}
                     </p>
                   </div>
@@ -200,51 +186,30 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
         </div>
       </div>
 
-      {/* Active Track Highlight Info */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTrack.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3 }}
-          className="mt-6 flex flex-col items-center justify-center text-center space-y-2"
-        >
-          <div className="flex items-center gap-3">
-            <span className="text-lg sm:text-xl font-bold text-white font-sans">
-              {activeTrack.title}
-            </span>
-            <span className="text-text-muted">•</span>
-            <span className="text-base sm:text-lg text-text-secondary font-sans font-medium">
-              {activeTrack.artist}
-            </span>
-          </div>
+      {/* Active Track Highlight Meta Bar */}
+      <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto p-4 rounded-2xl bg-surface-elevated/80 border border-surface-border backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <Disc3 className="w-5 h-5 text-brand-purple animate-spin-slow" />
+          <span className="text-sm font-bold text-white">{activeTrack.title}</span>
+          <span className="text-text-muted">•</span>
+          <span className="text-sm text-text-secondary">{activeTrack.artist}</span>
+        </div>
 
-          <div className="flex items-center gap-3 text-xs text-text-muted">
-            <span>Álbum: {activeTrack.album}</span>
-            <span>•</span>
-            <span>{activeTrack.genre}</span>
-            <span>•</span>
-            <span className="font-mono">{activeTrack.duration}</span>
-          </div>
-
-          {/* Dots Indicator */}
-          <div className="flex items-center gap-1.5 pt-4">
-            {tracks.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => onActiveChange(i)}
-                aria-label={`Ir para música ${i + 1}`}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i === activeIndex
-                    ? 'w-6 bg-brand-purple shadow-glow'
-                    : 'w-1.5 bg-surface-border hover:bg-text-secondary'
-                }`}
-              />
-            ))}
-          </div>
-        </motion.div>
-      </AnimatePresence>
-    </div>
+        <div className="flex items-center gap-2">
+          {tracks.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => onActiveChange(i)}
+              aria-label={`Faixa ${i + 1}`}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                i === activeIndex
+                  ? 'w-8 bg-brand-purple'
+                  : 'w-2 bg-surface-border hover:bg-text-secondary'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
   );
 };

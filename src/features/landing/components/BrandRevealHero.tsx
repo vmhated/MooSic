@@ -1,214 +1,159 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import React from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
-import { Play, Sparkles, ArrowRight, Music2, Disc3 } from 'lucide-react';
-import { LivingInfinity } from './LivingInfinity';
+import { Play, ArrowUpRight, Disc } from 'lucide-react';
+import { MockTrack } from '../data/mockMusicData';
 
 interface BrandRevealHeroProps {
-  onExploreClick?: () => void;
-  activeAccentColor?: string;
+  onStartClick?: () => void;
+  activeTrack: MockTrack;
 }
 
 export const BrandRevealHero: React.FC<BrandRevealHeroProps> = ({
-  onExploreClick,
-  activeAccentColor = '#8B5CF6',
+  onStartClick,
+  activeTrack,
 }) => {
   const shouldReduceMotion = useReducedMotion();
-  
-  // Animation timeline state:
-  // 'initial' -> 'approaching' -> 'merging' -> 'revealed'
-  const [animationStage, setAnimationStage] = useState<'initial' | 'approaching' | 'merging' | 'revealed'>(
-    shouldReduceMotion ? 'revealed' : 'initial'
-  );
-
-  useEffect(() => {
-    if (shouldReduceMotion) return;
-
-    // Sequence the brand reveal seamlessly
-    const timer1 = setTimeout(() => setAnimationStage('approaching'), 400);
-    const timer2 = setTimeout(() => setAnimationStage('merging'), 1600);
-    const timer3 = setTimeout(() => setAnimationStage('revealed'), 2400);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-    };
-  }, [shouldReduceMotion]);
-
-  const handleReplay = () => {
-    if (shouldReduceMotion) return;
-    setAnimationStage('initial');
-    setTimeout(() => setAnimationStage('approaching'), 300);
-    setTimeout(() => setAnimationStage('merging'), 1400);
-    setTimeout(() => setAnimationStage('revealed'), 2200);
-  };
 
   return (
-    <section className="relative min-h-[90vh] flex flex-col items-center justify-start pt-12 md:pt-20 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden text-center select-none">
-      {/* Background Dynamic Light Atmosphere */}
+    <section
+      className="relative min-h-[92vh] w-full bg-background flex flex-col justify-between px-4 sm:px-8 lg:px-12 pt-24 sm:pt-28 pb-12 overflow-hidden select-none"
+      aria-label="MooSic Hero Brand Experience"
+    >
+      {/* Background Subtle Color Wash */}
       <motion.div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[650px] sm:w-[900px] h-[500px] rounded-full blur-[140px] pointer-events-none opacity-25 transition-colors duration-1000"
+        className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[650px] h-[550px] rounded-full blur-[180px] pointer-events-none opacity-20 transition-colors duration-1000 -z-10"
         style={{
-          background: `radial-gradient(ellipse at top, ${activeAccentColor} 0%, rgba(139, 92, 246, 0.15) 50%, transparent 80%)`,
+          background: `radial-gradient(circle at center, ${activeTrack.accent} 0%, transparent 75%)`,
         }}
       />
 
-      {/* Subtle Grid Ambient Texture */}
-      <div 
-        className="absolute inset-0 bg-[linear-gradient(to_right,#19192415_1px,transparent_1px),linear-gradient(to_bottom,#19192415_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"
-      />
-
-      {/* TOP BRAND REVEAL CANVASES */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-[140px] sm:min-h-[170px] mb-4">
-        <AnimatePresence mode="wait">
-          {animationStage !== 'revealed' ? (
-            /* BRAND REVEAL STAGE 1 & 2: The Two O's Approaching & Merging */
-            <motion.div
-              key="approaching-stage"
-              className="relative flex items-center justify-center w-full max-w-md h-32"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.3 } }}
-            >
-              {/* Left "O" */}
-              <motion.div
-                className="absolute flex items-center justify-center"
-                initial={{ x: -120, opacity: 0.2, scale: 0.85 }}
-                animate={
-                  animationStage === 'initial'
-                    ? { x: -120, opacity: 0.35, scale: 0.9 }
-                    : animationStage === 'approaching'
-                    ? { x: -28, opacity: 0.95, scale: 1.05 }
-                    : { x: -14, opacity: 1, scale: 1.1 }
-                }
-                transition={{
-                  duration: 1.2,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-              >
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-[4px] border-brand-purple shadow-[0_0_25px_rgba(139,92,246,0.5)] flex items-center justify-center">
-                  <div className="w-3 h-3 rounded-full bg-white/60 animate-ping" />
-                </div>
-              </motion.div>
-
-              {/* Central Energy Spark when meeting */}
-              {animationStage === 'merging' && (
-                <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1.5, opacity: 0.8 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="w-12 h-12 rounded-full bg-brand-purple/40 blur-md z-10"
-                />
-              )}
-
-              {/* Right "O" */}
-              <motion.div
-                className="absolute flex items-center justify-center"
-                initial={{ x: 120, opacity: 0.2, scale: 0.85 }}
-                animate={
-                  animationStage === 'initial'
-                    ? { x: 120, opacity: 0.35, scale: 0.9 }
-                    : animationStage === 'approaching'
-                    ? { x: 28, opacity: 0.95, scale: 1.05 }
-                    : { x: 14, opacity: 1, scale: 1.1 }
-                }
-                transition={{
-                  duration: 1.2,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-              >
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-[4px] border-brand-purple shadow-[0_0_25px_rgba(139,92,246,0.5)] flex items-center justify-center">
-                  <div className="w-3 h-3 rounded-full bg-white/60 animate-ping" />
-                </div>
-              </motion.div>
-            </motion.div>
-          ) : (
-            /* BRAND REVEAL STAGE 3 & 4: Living ∞ + MooSic Wordmark */
-            <motion.div
-              key="infinity-stage"
-              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.88, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col items-center gap-3 cursor-pointer group"
-              onClick={handleReplay}
-              title="Clique para reviver o gesto de marca"
-            >
-              <LivingInfinity size={110} glowColor={activeAccentColor} />
-
-              {/* Brand Wordmark in Manrope */}
-              <motion.div
-                initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-                className="flex items-center tracking-tight"
-              >
-                <span className="font-brand font-extrabold text-3xl sm:text-4xl text-white tracking-tight">
-                  M<span className="text-brand-purple tracking-tight">oo</span>Sic
-                </span>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* TOP BRAND ANCHOR HEADER */}
+      <div className="w-full flex items-center justify-between text-xs text-text-muted z-20">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-purple animate-pulse" />
+          <span className="text-xs font-medium text-text-secondary">Live Soundstream</span>
+        </div>
+        <div className="hidden sm:flex items-center gap-4 text-xs text-text-secondary font-medium">
+          <span>Hi-Res Lossless 24-Bit</span>
+          <span>•</span>
+          <span>M ∞ Sic</span>
+        </div>
       </div>
 
-      {/* HERO HEADLINE & COPY */}
-      <motion.div
-        className="relative z-10 max-w-3xl mx-auto space-y-4 sm:space-y-6"
-        initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: shouldReduceMotion ? 0 : 0.6, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {/* Concept Pill Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-elevated/80 border border-surface-border backdrop-blur-md text-xs font-medium text-text-secondary shadow-sm">
-          <Sparkles className="w-3.5 h-3.5 text-brand-purple" />
-          <span>O + O → ∞ • Fluxo e Descoberta Contínua</span>
-        </div>
+      {/* MAIN HERO GRID (Headline Left + Asymmetric Large Artwork Right) */}
+      <div className="relative flex-1 flex items-center justify-center w-full max-w-6xl mx-auto my-auto py-6 z-20">
+        <motion.div
+          className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center"
+          initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {/* Left Column: Integrated M(∞)Sic Brand Signature + Headline + Action CTAs */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* Integrated M(∞)Sic Header Signature */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-0.5 font-brand font-extrabold text-2xl text-white">
+                <span>M</span>
+                <div className="w-7 h-3.5 relative inline-flex items-center justify-center mx-0.5">
+                  <svg viewBox="0 0 200 100" fill="none" className="w-full h-full">
+                    <path
+                      d="M 100 50 C 122 20, 168 20, 168 50 C 168 80, 122 80, 100 50 C 78 20, 32 20, 32 50 C 32 80, 78 80, 100 50 Z"
+                      stroke="#8B5CF6"
+                      strokeWidth="5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <span>Sic</span>
+              </div>
+              <span className="text-text-muted">•</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                Where music never ends
+              </span>
+            </div>
 
-        {/* Main Title */}
-        <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold font-sans text-white tracking-tight leading-[1.1]">
-          Music that <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#D8B4FE] to-brand-purple">moves with you.</span>
-        </h1>
+            {/* Monumental Headline */}
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold font-sans text-white tracking-tighter leading-[0.95] uppercase">
+              Sound in <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-text-primary to-brand-purple">
+                infinite flow.
+              </span>
+            </h1>
 
-        {/* Subtitle */}
-        <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-2xl mx-auto font-sans font-normal leading-relaxed">
-          Uma experiência musical viva e sem barreiras. Onde cada faixa é uma ponte para a próxima descoberta infinita.
-        </p>
+            {/* Value Proposition */}
+            <p className="text-base sm:text-lg text-text-secondary font-sans leading-relaxed max-w-lg">
+              Áudio de estúdio de 24 bits, atmosfera reativa e descoberta ininterrupta. Onde a música nunca para.
+            </p>
 
-        {/* Hero CTA & Quick Actions */}
-        <div className="pt-3 sm:pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button
-            variant="primary"
-            size="lg"
-            leftIcon={<Play className="w-4 h-4 fill-current" />}
-            onClick={onExploreClick}
-            className="w-full sm:w-auto text-base px-8 py-3.5 shadow-[0_0_30px_rgba(139,92,246,0.4)] hover:shadow-[0_0_45px_rgba(139,92,246,0.6)] group"
-          >
-            Start listening
-            <ArrowRight className="w-4 h-4 ml-1.5 transition-transform group-hover:translate-x-1" />
-          </Button>
+            {/* Action Buttons */}
+            <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+              <Button
+                variant="primary"
+                size="lg"
+                leftIcon={<Play className="w-4 h-4 fill-current" />}
+                onClick={onStartClick}
+                className="text-base px-8 py-4 font-bold shadow-glow hover:shadow-glow-lg"
+              >
+                Start listening
+              </Button>
 
-          <a
-            href="#carousel-discovery"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-text-secondary hover:text-white px-5 py-3 rounded-xl transition-colors hover:bg-surface-elevated/50"
-          >
-            <Disc3 className="w-4 h-4 text-brand-purple animate-spin-slow" />
-            Explorar Artworks
-          </a>
-        </div>
-      </motion.div>
+              <a
+                href="#discover"
+                className="inline-flex items-center justify-center gap-2 text-sm font-semibold text-text-secondary hover:text-white px-6 py-4 rounded-xl border border-surface-border hover:border-text-secondary/50 bg-surface/40 hover:bg-surface-elevated transition-all"
+              >
+                <span>Explore catalogue</span>
+                <ArrowUpRight className="w-4 h-4 text-brand-purple" />
+              </a>
+            </div>
+          </div>
 
-      {/* Decorative Sound Wave subtle indicator */}
-      <motion.div
-        className="relative z-10 mt-12 flex items-center justify-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.6 }}
-        transition={{ delay: 1 }}
-      >
-        <Music2 className="w-4 h-4 text-brand-purple mr-1" />
-        <span className="text-xs font-mono uppercase tracking-widest text-text-muted">Infinite Sound Flow</span>
-      </motion.div>
+          {/* Right Column: Asymmetric Large Artwork */}
+          <div className="lg:col-span-5 relative flex items-center justify-center">
+            <div className="relative w-full max-w-xs sm:max-w-sm aspect-square rounded-3xl overflow-hidden border border-surface-border shadow-2xl bg-surface-elevated group">
+              <img
+                src={activeTrack.artwork}
+                alt={activeTrack.title}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                loading="lazy"
+              />
+
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/30" />
+
+              {/* Top Playing Tag */}
+              <div className="absolute top-4 left-4 px-3 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-xs font-medium text-white flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-brand-purple animate-pulse" />
+                <span>Now Playing</span>
+              </div>
+
+              {/* Vinyl Icon */}
+              <div className="absolute top-4 right-4 text-white/70">
+                <Disc className="w-5 h-5 animate-spin-slow" />
+              </div>
+
+              {/* Bottom Meta Overlay */}
+              <div className="absolute bottom-0 inset-x-0 p-5 space-y-1">
+                <span className="text-xs font-semibold text-brand-light uppercase tracking-wider">
+                  {activeTrack.genre} • {activeTrack.badge}
+                </span>
+                <h3 className="text-xl font-bold text-white font-sans truncate">
+                  {activeTrack.title}
+                </h3>
+                <p className="text-xs text-text-secondary font-sans truncate">
+                  {activeTrack.artist}
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* BOTTOM METADATA BAR */}
+      <div className="w-full pt-4 border-t border-surface-border/40 flex items-center justify-between text-xs text-text-muted z-20">
+        <span>MooSic Platform</span>
+        <span>Hi-Res Lossless 24-Bit Audio</span>
+      </div>
     </section>
   );
 };

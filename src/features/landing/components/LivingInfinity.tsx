@@ -10,14 +10,14 @@ interface LivingInfinityProps {
 }
 
 /**
- * LivingInfinity: O símbolo ∞ como elemento vivo.
- * Mantém micro-movimentos orgânicos (respiração sutil, ondas de luminosidade e resposta suave ao cursor).
+ * LivingInfinity: O símbolo ∞ como elemento vivo e calmo.
+ * Mantém micro-movimentos orgânicos (respiração sutil e resposta suave ao cursor).
  */
 export const LivingInfinity: React.FC<LivingInfinityProps> = ({
   size = 120,
   className = '',
   glowColor = '#8B5CF6',
-  glowOpacity = 0.35,
+  glowOpacity = 0.25,
   interactive = true,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -41,12 +41,12 @@ export const LivingInfinity: React.FC<LivingInfinityProps> = ({
           shouldReduceMotion
             ? { opacity: glowOpacity }
             : {
-                opacity: [glowOpacity * 0.7, glowOpacity * 1.3, glowOpacity * 0.7],
-                scale: [0.95, 1.08, 0.95],
+                opacity: [glowOpacity * 0.8, glowOpacity * 1.15, glowOpacity * 0.8],
+                scale: [0.98, 1.03, 0.98],
               }
         }
         transition={{
-          duration: 4,
+          duration: 4.5,
           repeat: Infinity,
           ease: 'easeInOut',
         }}
@@ -60,8 +60,8 @@ export const LivingInfinity: React.FC<LivingInfinityProps> = ({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="relative z-10 overflow-visible"
-        whileHover={interactive && !shouldReduceMotion ? { scale: 1.06 } : undefined}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        whileHover={interactive && !shouldReduceMotion ? { scale: 1.04 } : undefined}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       >
         <defs>
           <linearGradient id="infinityGrad" x1="0%" y1="50%" x2="100%" y2="50%">
@@ -69,78 +69,40 @@ export const LivingInfinity: React.FC<LivingInfinityProps> = ({
             <stop offset="50%" stopColor="#8B5CF6" />
             <stop offset="100%" stopColor="#C084FC" />
           </linearGradient>
-          <filter id="infinityGlowFilter" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="4" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
         </defs>
 
         {/* Ambient Halo Path */}
         <motion.path
-          d="M 50,50 C 50,22 15,22 15,50 C 15,78 50,78 50,50 C 50,22 85,22 85,50 C 85,78 50,78 50,50 Z"
-          transform="translate(50, 0) scale(1)"
+          d="M 100 50 C 122 20, 168 20, 168 50 C 168 80, 122 80, 100 50 C 78 20, 32 20, 32 50 C 32 80, 78 80, 100 50 Z"
           stroke={glowColor}
           strokeWidth="6"
           strokeLinecap="round"
           strokeLinejoin="round"
-          opacity="0.25"
-          filter="url(#infinityGlowFilter)"
-          animate={
-            shouldReduceMotion
-              ? {}
-              : {
-                  opacity: [0.15, 0.35, 0.15],
-                  strokeWidth: [5, 7, 5],
-                }
-          }
-          transition={{
-            duration: 3.5,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
+          opacity="0.2"
+          className="blur-xs"
         />
 
-        {/* Smooth Infinity Path: Smooth Bernoulli Lemniscate Curves */}
-        {/* Left Loop: centered around x=58, Right Loop: centered around x=142, Center node: (100, 50) */}
+        {/* Primary Infinity Path */}
         <motion.path
           d="M 100 50 C 122 20, 168 20, 168 50 C 168 80, 122 80, 100 50 C 78 20, 32 20, 32 50 C 32 80, 78 80, 100 50 Z"
           stroke="url(#infinityGrad)"
-          strokeWidth="6.5"
+          strokeWidth="5"
           strokeLinecap="round"
           strokeLinejoin="round"
           animate={
             shouldReduceMotion
               ? {}
               : {
-                  strokeWidth: [6, 7.2, 6],
+                  strokeWidth: [4.8, 5.4, 4.8],
+                  scale: [1, 1.015, 1],
                 }
           }
           transition={{
-            duration: 3,
+            duration: 3.6,
             repeat: Infinity,
             ease: 'easeInOut',
           }}
         />
-
-        {/* Flowing energy pulse dot along the loop */}
-        {!shouldReduceMotion && (
-          <motion.circle
-            r="4.5"
-            fill="#FFFFFF"
-            filter="drop-shadow(0 0 6px #FFFFFF)"
-            animate={{
-              offsetDistance: ['0%', '100%'],
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              ease: 'linear',
-            }}
-            style={{
-              offsetPath: "path('M 100 50 C 122 20, 168 20, 168 50 C 168 80, 122 80, 100 50 C 78 20, 32 20, 32 50 C 32 80, 78 80, 100 50 Z')",
-            }}
-          />
-        )}
       </motion.svg>
     </div>
   );
