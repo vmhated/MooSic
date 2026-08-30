@@ -12,36 +12,35 @@ export interface UseFeaturedTracksReturn {
 
 /**
  * Hook para carregar faixas em destaque da fundação de metadados.
- * Inicializa imediatamente com dataset de alta fidelidade para garantir zero flash/spinner
- * e atualiza transparentemente com dados do MusicBrainz em background.
+ * Inicializa imediatamente com as capas oficiais dos álbuns (Racionais MC's, Sabotage, BK', Matuê, Criolo, Daft Punk)
+ * e atualiza em segundo plano via iTunes/MusicBrainz.
  */
 export function useFeaturedTracks(): UseFeaturedTracksReturn {
   const [tracks, setTracks] = useState<Track[]>(() => {
-    // Inicialização síncrona segura para evitar qualquer frame em branco
     return [
       {
-        id: 'track-1',
-        title: 'Neon Orbit',
-        artistId: 'artist-1',
-        artistName: 'Aether Echo',
-        albumId: 'album-1',
-        albumTitle: 'Parallel Horizons',
-        coverUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
-        durationSeconds: 222,
-        durationFormatted: '3:42',
-        genre: 'Electronic Ambient',
+        id: 'racionais-vida-loka',
+        title: 'Vida Loka (Pt. 1)',
+        artistId: 'artist-racionais',
+        artistName: "Racionais MC's",
+        albumId: 'album-nada-como-um-dia',
+        albumTitle: 'Nada como um Dia após o Outro Dia',
+        coverUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/3f/ca/fd/3fcafdad-07c1-c752-7878-39dfd32b3b28/0.jpg/600x600bb.jpg',
+        durationSeconds: 303,
+        durationFormatted: '5:03',
+        genre: 'Rap Nacional / Hip-Hop',
         accent: '#8B5CF6',
         accentRgb: '139, 92, 246',
-        badge: 'Hi-Res Lossless',
+        badge: 'MooSic Masterpiece',
         lyricsSnippet: [
-          { time: '0:14', text: 'Lost in the frequency of endless sound' },
-          { time: '0:28', text: 'Where echoes meet the morning ground', highlight: true },
-          { time: '0:42', text: 'Drifting further than we used to know' },
-          { time: '0:56', text: 'Caught inside the infinite flow' },
+          { time: '0:15', text: 'Fé em Deus que ele é justo, ei, irmão, nunca se esqueça' },
+          { time: '0:32', text: 'Na caminhada tem que ser um passo de cada vez', highlight: true },
+          { time: '0:50', text: 'Vida loka, cabulosa, o tempo passa e a gente aprende' },
+          { time: '1:10', text: 'Um brinde aos guerreiros que estão na luta' },
         ],
-        isExplicit: false,
-        providerId: 'mock',
-        providerTrackId: 'track-1',
+        isExplicit: true,
+        providerId: 'curated',
+        providerTrackId: 'racionais-vida-loka',
       },
     ];
   });

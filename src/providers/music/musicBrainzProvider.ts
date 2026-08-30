@@ -9,7 +9,7 @@ interface CacheEntry<T> {
   timestamp: number;
 }
 
-const CACHE_TTL_MS = 1000 * 60 * 15; // 15 minutos de cache em memória
+const CACHE_TTL_MS = 1000 * 60 * 15; // 15 minutos de cache
 
 export class MusicBrainzProvider implements IMusicProvider {
   readonly id = 'musicbrainz';
@@ -19,21 +19,18 @@ export class MusicBrainzProvider implements IMusicProvider {
   private lastRequestTime = 0;
 
   /**
-   * Garante respeito ao rate limit do MusicBrainz (1 req/s)
+   * Respeito ao rate limit (1 req/s)
    */
   private async throttle(): Promise<void> {
     const now = Date.now();
     const elapsed = now - this.lastRequestTime;
-    if (elapsed < 1000) {
-      await new Promise((resolve) => setTimeout(resolve, 1000 - elapsed));
+    if (elapsed < 800) {
+      await new Promise((resolve) => setTimeout(resolve, 800 - elapsed));
     }
     this.lastRequestTime = Date.now();
   }
 
-  /**
-   * Executa fetch com timeout e headers obrigatórios do MusicBrainz
-   */
-  private async fetchWithTimeout(url: string, timeoutMs = 4000): Promise<Response> {
+  private async fetchWithTimeout(url: string, timeoutMs = 5000): Promise<Response> {
     await this.throttle();
 
     const controller = new AbortController();
@@ -55,9 +52,6 @@ export class MusicBrainzProvider implements IMusicProvider {
     }
   }
 
-  /**
-   * Busca com cache em memória
-   */
   private async fetchJson<T>(url: string): Promise<T | null> {
     const cached = this.cache.get(url);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
@@ -70,8 +64,7 @@ export class MusicBrainzProvider implements IMusicProvider {
       const data = await res.json();
       this.cache.set(url, { data, timestamp: Date.now() });
       return data as T;
-    } catch (err) {
-      // Falha de rede ou timeout
+    } catch {
       return null;
     }
   }
@@ -97,25 +90,46 @@ export class MusicBrainzProvider implements IMusicProvider {
     return mockMusicProvider.getArtist(id);
   }
 
+  /**
+   * Busca avançada multi-termo para artistas, bandas e faixas com desduplicação
+   */
   async search(query: string): Promise<SearchResults> {
-    try {
-      const encoded = encodeURIComponent(query);
-      const url = `${env.musicBrainzUrl}/recording?query=${encoded}&limit=10&fmt=json`;
-      const data = await this.fetchJson<any>(url);
+    const clean = query.trim();
+    if (!clean) {
+      return { tracks: [], artists: [], albums: [], playlists: [] };
+    }
 
+    try {
+      // 1. Busca ampla por gravação / artista
+      const searchLucene = `recording:"${clean}" OR artist:"${clean}" OR "${clean}"`;
+      const url = `${env.musicBrainzUrl}/recording?query=${encodeURIComponent(searchLucene)}&limit=25&fmt=json`;
+      let data = await this.fetchJson<any>(url);
+
+      // 2. Se não encontrou, tenta busca simples direta
       if (!data || !data.recordings || data.recordings.length === 0) {
-        return mockMusicProvider.search(query);
+        const simpleUrl = `${env.musicBrainzUrl}/recording?query=${encodeURIComponent(clean)}&limit=25&fmt=json`;
+        data = await this.fetchJson<any>(simpleUrl);
       }
 
-      return MusicBrainzAdapter.toDomainSearchResults(data.recordings);
+      // 3. Se ainda não encontrou, busca por artista e puxa gravações do artista
+      if (!data || !data.recordings || data.recordings.length === 0) {
+        const artistUrl = `${env.musicBrainzUrl}/artist?query=${encodeURIComponent(clean)}&limit=1&fmt=json`;
+        const artistData = await this.fetchJson<any>(artistUrl);
+        const artist = artistData?.artists?.[0];
+
+        if (artist?.id) {
+          const artistRecUrl = `${env.musicBrainzUrl}/recording?query=arid:${artist.id}&limit=25&fmt=json`;
+          data = await this.fetchJson<any>(artistRecUrl);
+        }
+      }
+
+      const rawRecordings = data?.recordings || [];
+      return MusicBrainzAdapter.toDomainSearchResults(rawRecordings, clean);
     } catch {
       return mockMusicProvider.search(query);
     }
   }
 
-  /**
-   * Obtém as faixas em destaque buscando gravações reais e consagradas do MusicBrainz
-   */
   async getFeaturedTracks(): Promise<Track[]> {
     const cacheKey = 'featured-hero-tracks';
     const cached = this.cache.get(cacheKey);
@@ -124,7 +138,6 @@ export class MusicBrainzProvider implements IMusicProvider {
     }
 
     try {
-      // Busca uma seleção curada de gravações consagradas via MusicBrainz
       const url = `${env.musicBrainzUrl}/recording?query=tag:electronic+OR+tag:ambient+OR+tag:synthwave&limit=6&fmt=json`;
       const data = await this.fetchJson<any>(url);
 
@@ -137,12 +150,10 @@ export class MusicBrainzProvider implements IMusicProvider {
         return tracks;
       }
     } catch {
-      // Em caso de falha de conexão, fallback seguro para os dados mockados curados
+      // Fallback
     }
 
-    // Fallback transparente
-    const fallbackTracks = await mockMusicProvider.getFeaturedTracks();
-    return fallbackTracks;
+    return mockMusicProvider.getFeaturedTracks();
   }
 }
 

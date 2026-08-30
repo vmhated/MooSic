@@ -1,46 +1,39 @@
-import React from 'react';
 import { MooLogo } from '@/components/common/MooLogo';
 
-export const Footer: React.FC = () => {
+export function Footer() {
   return (
-    <footer className="relative border-t border-surface-border bg-background pt-16 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden select-none">
-      <div className="max-w-7xl mx-auto space-y-12">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
-          {/* Brand Info */}
-          <div className="space-y-3">
-            <MooLogo size="lg" />
-            <p className="text-sm text-text-secondary max-w-sm font-sans">
-              Onde o som nunca para e cada nota conecta você à sua próxima descoberta.
-            </p>
-          </div>
-
-          {/* Navigation Links */}
-          <div className="flex items-center gap-8 text-sm font-medium text-text-secondary">
-            <a href="#discover" className="hover:text-white transition-colors">
-              Discover
-            </a>
-            <a href="#atmosphere" className="hover:text-white transition-colors">
-              Atmosphere
-            </a>
-            <a href="#lyrics" className="hover:text-white transition-colors">
-              Lyrics
-            </a>
-            <a href="#player" className="hover:text-white transition-colors">
-              Player
-            </a>
-          </div>
+    <footer className="w-full bg-background border-t border-white/10 py-16 px-4 sm:px-8 lg:px-12 select-none">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 text-xs text-text-muted">
+        {/* Brand & Manifesto */}
+        <div className="space-y-3 text-center md:text-left">
+          <MooLogo size="sm" />
+          <p className="max-w-xs text-text-secondary">
+            Onde a música nunca tem fim. Áudio de estúdio de 24 bits, rimas autênticas e conexão sonora contínua.
+          </p>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-surface-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-text-muted font-sans">
-          <span>© 2026 MooSic. Todos os direitos reservados.</span>
-          <div className="flex items-center gap-4">
-            <span>Manrope + Plus Jakarta Sans</span>
-            <span>•</span>
-            <span>Hi-Res Lossless Audio Architecture</span>
-          </div>
+        {/* Links Rápidos em Português */}
+        <div className="flex items-center gap-8 text-text-secondary font-semibold">
+          <a href="#discover" className="hover:text-white transition-colors">
+            Descobrir
+          </a>
+          <a href="#atmosphere" className="hover:text-white transition-colors">
+            Atmosfera
+          </a>
+          <a href="#lyrics" className="hover:text-white transition-colors">
+            Letras
+          </a>
+          <a href="#player" className="hover:text-white transition-colors">
+            Player
+          </a>
+        </div>
+
+        {/* Direitos e Qualidade */}
+        <div className="text-center md:text-right space-y-1 font-medium">
+          <p>© {new Date().getFullYear()} MooSic Platform. Todos os direitos reservados.</p>
+          <p className="text-text-muted">Hi-Res Lossless Audio • 24-Bit / 96kHz</p>
         </div>
       </div>
     </footer>
   );
-};
+}

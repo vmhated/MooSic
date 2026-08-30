@@ -1,7 +1,7 @@
 import React from 'react';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  variant?: 'primary' | 'glass' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   leftIcon?: React.ReactNode;
@@ -20,19 +20,25 @@ export function Button({
   ...props
 }: ButtonProps) {
   const baseClasses =
-    'inline-flex items-center justify-center font-sans font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-purple/50 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100 select-none';
+    'relative inline-flex items-center justify-center font-sans font-bold rounded-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-purple/50 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none select-none overflow-hidden';
 
   const variants = {
-    primary: 'bg-brand-purple hover:bg-brand-hover text-white shadow-glow hover:shadow-glow-lg',
-    secondary: 'bg-surface-elevated hover:bg-[#22222A] text-text-primary border border-surface-border',
-    outline: 'border border-surface-border hover:border-brand-purple/50 bg-transparent text-text-primary hover:bg-surface-elevated',
-    ghost: 'bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-elevated',
+    primary:
+      'bg-gradient-to-r from-brand-purple via-violet-600 to-indigo-600 hover:from-brand-hover hover:to-indigo-500 text-white shadow-[0_0_30px_rgba(139,92,246,0.45)] border border-white/25 hover:border-white/50 backdrop-blur-xl group',
+    glass:
+      'bg-white/[0.08] hover:bg-white/[0.18] backdrop-blur-2xl text-white border border-white/15 hover:border-brand-purple/60 shadow-[0_8px_32px_rgba(0,0,0,0.4)] group',
+    secondary:
+      'bg-surface-elevated/80 hover:bg-surface-elevated backdrop-blur-xl text-text-primary border border-surface-border hover:border-brand-purple/40',
+    outline:
+      'bg-surface/30 hover:bg-surface-elevated/80 backdrop-blur-xl border border-white/10 hover:border-brand-purple/60 text-white shadow-sm',
+    ghost:
+      'bg-transparent text-text-secondary hover:text-white hover:bg-white/5 backdrop-blur-sm',
   };
 
   const sizes = {
-    sm: 'text-xs px-3 py-1.5 gap-1.5',
-    md: 'text-sm px-4 py-2.5 gap-2',
-    lg: 'text-base px-6 py-3.5 gap-2.5',
+    sm: 'text-xs px-3.5 py-2 gap-1.5 rounded-xl',
+    md: 'text-sm px-5 py-3 gap-2 rounded-2xl',
+    lg: 'text-base px-7 py-4 gap-2.5 rounded-2xl',
   };
 
   const widthClass = fullWidth ? 'w-full' : '';
@@ -43,9 +49,12 @@ export function Button({
       disabled={disabled}
       {...props}
     >
-      {leftIcon && <span className="shrink-0">{leftIcon}</span>}
-      {children && <span>{children}</span>}
-      {rightIcon && <span className="shrink-0">{rightIcon}</span>}
+      {/* Subtle Shimmer Glass Reflection on Hover */}
+      <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
+
+      {leftIcon && <span className="shrink-0 z-10">{leftIcon}</span>}
+      {children && <span className="z-10">{children}</span>}
+      {rightIcon && <span className="shrink-0 z-10">{rightIcon}</span>}
     </button>
   );
 }

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { Volume2, VolumeX, Sparkles } from 'lucide-react';
+import { brandSound } from '@/utils/audio/brandSoundDesign';
 
 interface BrandIntroProps {
   onComplete: () => void;
@@ -7,17 +9,34 @@ interface BrandIntroProps {
 
 export const BrandIntro: React.FC<BrandIntroProps> = ({ onComplete }) => {
   const shouldReduceMotion = useReducedMotion();
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
-  // Intro narrative phases with generous, cinematic pacing:
-  // 'initial'   (0.00s - 0.25s) -> Soft background activation
-  // 'approach'  (0.25s - 1.40s) -> Two physical O's glide in with silky momentum
-  // 'converge'  (1.40s - 1.95s) -> Circles meet and fuse softly at center
-  // 'morph'     (1.95s - 2.50s) -> Forms the continuous bold Lemniscate ∞
-  // 'settle'    (2.50s - 4.20s) -> Tight M(∞)Sic illuminates, grows in scale & tagline appears
-  // 'exit'      (4.20s - 5.00s) -> Silky dissolve into the active landing page
-  const [phase, setPhase] = useState<
-    'initial' | 'approach' | 'converge' | 'morph' | 'settle' | 'exit'
-  >(shouldReduceMotion ? 'exit' : 'initial');
+  // Fases narrativas limpas com o infinito como indicador de carregamento:
+  // 1: 'name-reveal'     (0.0s - 1.6s) -> Nome "MooSic" centralizado com "oo" destacados
+  // 2: 'infinity-loading'(1.6s - 3.8s) -> Os O's formam o ∞ que pulsa como indicador de carregamento de áudio
+  // 3: 'resolved'        (3.8s - 4.5s) -> Conclusão suave e dissolução para a Landing Page (sem zoom)
+  const [phase, setPhase] = useState<'name-reveal' | 'infinity-loading' | 'resolved'>(
+    shouldReduceMotion ? 'resolved' : 'name-reveal'
+  );
+
+  const handleUserGesture = () => {
+    setHasInteracted(true);
+    brandSound.init();
+    if (phase === 'name-reveal') {
+      brandSound.playNameEntrySound();
+    } else if (phase === 'infinity-loading') {
+      brandSound.playInfinityLoadingSound();
+    }
+  };
+
+  const toggleSound = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleUserGesture();
+    const nextState = !isAudioMuted;
+    setIsAudioMuted(nextState);
+    brandSound.setMuted(nextState);
+  };
 
   useEffect(() => {
     if (shouldReduceMotion) {
@@ -27,166 +46,282 @@ export const BrandIntro: React.FC<BrandIntroProps> = ({ onComplete }) => {
       return () => clearTimeout(quickTimer);
     }
 
-    const t1 = setTimeout(() => setPhase('approach'), 200);
-    const t2 = setTimeout(() => setPhase('converge'), 1400);
-    const t3 = setTimeout(() => setPhase('morph'), 1950);
-    const t4 = setTimeout(() => setPhase('settle'), 2500);
-    const t5 = setTimeout(() => setPhase('exit'), 4200);
-    const t6 = setTimeout(() => onComplete(), 4950);
+    // 1. Som de entrada do nome MooSic
+    const t0 = setTimeout(() => {
+      brandSound.playNameEntrySound();
+    }, 200);
+
+    // 2. Os O's viram o infinito e iniciam o carregamento
+    const t1 = setTimeout(() => {
+      setPhase('infinity-loading');
+      brandSound.playInfinityLoadingSound();
+    }, 1600);
+
+    // 3. Conclusão do carregamento e transição
+    const t2 = setTimeout(() => {
+      setPhase('resolved');
+      brandSound.playPlatformRevealSound();
+    }, 3800);
+
+    const t3 = setTimeout(() => {
+      onComplete();
+    }, 4500);
 
     return () => {
+      clearTimeout(t0);
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
-      clearTimeout(t4);
-      clearTimeout(t5);
-      clearTimeout(t6);
     };
   }, [shouldReduceMotion, onComplete]);
 
+  // Modo com movimento reduzido
+  if (shouldReduceMotion) {
+    return (
+      <motion.div
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0, transition: { duration: 0.4 } }}
+        className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl select-none"
+      >
+        <div className="flex items-center justify-center font-brand font-black text-6xl sm:text-7xl lg:text-8xl text-white tracking-tight">
+          <span>M</span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-light via-brand-purple to-indigo-400">
+            oo
+          </span>
+          <span>Sic</span>
+        </div>
+      </motion.div>
+    );
+  }
+
+  const isNamePhase = phase === 'name-reveal';
+  const isLoadingPhase = phase === 'infinity-loading';
+
   return (
     <AnimatePresence>
-      {phase !== 'exit' && (
+      {phase !== 'resolved' && (
         <motion.div
           key="brand-intro-overlay"
-          initial={{ opacity: 0 }}
+          initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }}
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/90 backdrop-blur-md select-none overflow-hidden"
-          aria-label="MooSic Brand Introduction"
+          exit={{
+            opacity: 0,
+            transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+          }}
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background select-none overflow-hidden cursor-pointer"
+          onClick={handleUserGesture}
+          aria-label="MooSic Abertura e Carregamento de Marca"
         >
-          {/* Vibrant Ambient Radial Glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-brand-purple/20 blur-[160px] pointer-events-none" />
+          {/* Fundo com iluminação aveludada */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#090611] via-[#0d091a] to-[#090611] pointer-events-none" />
 
-          {/* Central Animation Stage */}
-          <div className="relative z-10 flex flex-col items-center justify-center min-h-[300px] w-full max-w-2xl px-4">
+          {/* Botão de Som no Canto Superior */}
+          <div className="absolute top-6 right-6 z-30">
+            <button
+              onClick={toggleSound}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.08] hover:bg-white/[0.16] border border-white/15 text-xs font-semibold text-text-secondary hover:text-white backdrop-blur-xl transition-all shadow-md active:scale-95"
+              aria-label="Alternar áudio imersivo"
+            >
+              {isAudioMuted ? (
+                <>
+                  <VolumeX className="w-4 h-4 text-text-muted" />
+                  <span className="text-xs">Som desativado</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 className="w-4 h-4 text-brand-purple animate-pulse" />
+                  <span className="text-xs text-white font-bold">Áudio Imersivo Ativo</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Dica de interação */}
+          {!hasInteracted && (
+            <motion.div
+              className="absolute bottom-10 inset-x-0 mx-auto w-fit flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.06] border border-white/10 text-xs text-text-secondary backdrop-blur-xl z-30 pointer-events-none"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-brand-purple animate-pulse" />
+              <span>Toque ou clique na tela para amplificar o som</span>
+            </motion.div>
+          )}
+
+          {/* Ambient Radial Glow */}
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] rounded-full pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(168,85,247,0.25) 0%, rgba(99,102,241,0.08) 45%, transparent 75%)',
+            }}
+            animate={{
+              scale: isLoadingPhase ? [1, 1.15, 1] : 1,
+              opacity: isLoadingPhase ? 0.4 : 0.3,
+            }}
+            transition={{
+              duration: 2.2,
+              repeat: isLoadingPhase ? Infinity : 0,
+              ease: 'easeInOut',
+            }}
+          />
+
+          {/* PALCO CENTRAL */}
+          <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-4xl px-4">
             
-            {/* ========================================================= */}
-            {/* 1. THE TWO SEPARATE O'S (Approach & Soft Convergence) */}
-            {/* ========================================================= */}
-            {(phase === 'initial' || phase === 'approach' || phase === 'converge') && (
-              <div className="relative flex items-center justify-center w-full h-40">
-                {/* Left Circle "O" */}
-                <motion.div
-                  className="absolute w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[5px] border-brand-purple shadow-[0_0_25px_rgba(139,92,246,0.6)]"
-                  initial={{ x: -260, y: -6, opacity: 0.8 }}
-                  animate={
-                    phase === 'initial'
-                      ? { x: -260, y: -6, opacity: 0.8 }
-                      : phase === 'approach'
-                      ? { x: -20, y: 0, opacity: 1 }
-                      : { x: -14, y: 0, opacity: 1 }
-                  }
-                  transition={{
-                    duration: phase === 'converge' ? 0.45 : 1.15,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                />
-
-                {/* Right Circle "O" */}
-                <motion.div
-                  className="absolute w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[5px] border-brand-purple shadow-[0_0_25px_rgba(139,92,246,0.6)]"
-                  initial={{ x: 260, y: 6, opacity: 0.8 }}
-                  animate={
-                    phase === 'initial'
-                      ? { x: 260, y: 6, opacity: 0.8 }
-                      : phase === 'approach'
-                      ? { x: 20, y: 0, opacity: 1 }
-                      : { x: 14, y: 0, opacity: 1 }
-                  }
-                  transition={{
-                    duration: phase === 'converge' ? 0.45 : 1.15,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                />
-              </div>
-            )}
-
-            {/* ========================================================= */}
-            {/* 2. TIGHT, BOLD & LUMINOUS M(∞)Sic COMPOSITION */}
-            {/* ========================================================= */}
-            {(phase === 'morph' || phase === 'settle') && (
-              <motion.div
-                className="flex flex-col items-center justify-center gap-6"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: phase === 'settle' ? 1.2 : 1 }}
-                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            {/* CONTAINER DA PALAVRA / INFINITO INDICATOR */}
+            <div className="relative flex items-center justify-center font-brand font-black text-6xl sm:text-7xl lg:text-8xl text-white tracking-tight leading-none min-h-[120px]">
+              
+              {/* 1. LETRA "M" */}
+              <motion.span
+                className="inline-block overflow-hidden"
+                animate={{
+                  opacity: isNamePhase ? 1 : 0,
+                  x: isNamePhase ? 0 : -50,
+                  scale: isNamePhase ? 1 : 0.8,
+                }}
+                transition={{
+                  duration: 0.7,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
               >
-                {/* Master Wordmark Container: Tight Kerning M + [∞] + Sic */}
-                <div className="flex items-center justify-center tracking-tight select-none drop-shadow-[0_0_35px_rgba(139,92,246,0.6)]">
-                  {/* Bold Letter "M" */}
-                  <motion.span
-                    className="font-brand font-black text-5xl sm:text-7xl lg:text-8xl text-white tracking-tighter"
-                    initial={{ opacity: 0, x: 24 }}
-                    animate={{
-                      opacity: phase === 'settle' ? 1 : 0,
-                      x: phase === 'settle' ? 0 : 24,
-                    }}
-                    transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-                  >
-                    M
-                  </motion.span>
+                M
+              </motion.span>
 
-                  {/* Luminous Central Infinity Symbol as the two "oo"s */}
+              {/* 2. OS DOIS O'S QUE SE TORNAM O INDICADOR DO INFINITO */}
+              <motion.div
+                className="relative flex items-center justify-center mx-1 sm:mx-2"
+                animate={{
+                  scale: isLoadingPhase ? 1.05 : 1,
+                }}
+                transition={{
+                  duration: 0.6,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+              >
+                {/* 2A. FASE INICIAL: DOIS CÍRCULOS O'S DESTACADOS */}
+                {isNamePhase && (
+                  <div className="relative flex items-center justify-center w-28 sm:w-36 lg:w-44 h-14 sm:h-18 lg:h-22">
+                    <svg viewBox="0 0 200 100" fill="none" className="w-full h-full overflow-visible">
+                      <defs>
+                        <linearGradient id="loadOgGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#F472B6" />
+                          <stop offset="35%" stopColor="#C084FC" />
+                          <stop offset="70%" stopColor="#A855F7" />
+                          <stop offset="100%" stopColor="#6366F1" />
+                        </linearGradient>
+                      </defs>
+                      <g>
+                        {/* Círculo Esquerdo 'O' */}
+                        <circle
+                          cx="54"
+                          cy="50"
+                          r="30"
+                          stroke="url(#loadOgGrad)"
+                          strokeWidth="15"
+                        />
+                        <circle cx="54" cy="50" r="18" fill="rgba(255,255,255,0.06)" />
+
+                        {/* Círculo Direito 'O' */}
+                        <circle
+                          cx="146"
+                          cy="50"
+                          r="30"
+                          stroke="url(#loadOgGrad)"
+                          strokeWidth="15"
+                        />
+                        <circle cx="146" cy="50" r="18" fill="rgba(255,255,255,0.06)" />
+                      </g>
+                    </svg>
+                  </div>
+                )}
+
+                {/* 2B. FASE DE CARREGAMENTO: INFINITO COMO LOADING STREAM */}
+                {isLoadingPhase && (
                   <motion.div
-                    className="relative flex items-center justify-center w-20 sm:w-28 lg:w-32 h-12 sm:h-16 lg:h-20 mx-0.5 sm:mx-1"
-                    animate={{
-                      scale: phase === 'settle' ? [1, 1.03, 1] : 1,
-                    }}
-                    transition={{
-                      scale: { duration: 3.5, repeat: Infinity, ease: 'easeInOut' },
-                    }}
+                    className="relative flex items-center justify-center w-28 sm:w-36 lg:w-44 h-14 sm:h-18 lg:h-22"
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   >
                     <svg viewBox="0 0 200 100" fill="none" className="w-full h-full overflow-visible">
                       <defs>
-                        <linearGradient id="introInfinityGlow" x1="0%" y1="50%" x2="100%" y2="50%">
-                          <stop offset="0%" stopColor="#C084FC" />
-                          <stop offset="50%" stopColor="#8B5CF6" />
-                          <stop offset="100%" stopColor="#D8B4FE" />
+                        <linearGradient id="infiniteLoadGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#F472B6" />
+                          <stop offset="35%" stopColor="#C084FC" />
+                          <stop offset="70%" stopColor="#A855F7" />
+                          <stop offset="100%" stopColor="#6366F1" />
                         </linearGradient>
                       </defs>
-                      <motion.path
-                        d="M 100 50 C 122 20, 168 20, 168 50 C 168 80, 122 80, 100 50 C 78 20, 32 20, 32 50 C 32 80, 78 80, 100 50 Z"
-                        stroke="url(#introInfinityGlow)"
-                        strokeWidth="6"
+
+                      {/* 1. Trilha Base do Infinito */}
+                      <path
+                        d="M 100 50 C 122 18, 172 18, 172 50 C 172 82, 122 82, 100 50 C 78 18, 28 18, 28 50 C 28 82, 78 82, 100 50 Z"
+                        stroke="rgba(255, 255, 255, 0.15)"
+                        strokeWidth="14"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        initial={{ pathLength: 0.8, opacity: 0.8 }}
-                        animate={{ pathLength: 1, opacity: 1 }}
-                        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                      />
+
+                      {/* 2. Feixe de Luz de Carregamento que Percorre o Loop Continuamente */}
+                      <motion.path
+                        d="M 100 50 C 122 18, 172 18, 172 50 C 172 82, 122 82, 100 50 C 78 18, 28 18, 28 50 C 28 82, 78 82, 100 50 Z"
+                        stroke="url(#infiniteLoadGrad)"
+                        strokeWidth="15"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        initial={{ pathLength: 0.35, pathOffset: 0 }}
+                        animate={{
+                          pathOffset: [0, 1],
+                        }}
+                        transition={{
+                          duration: 1.6,
+                          repeat: Infinity,
+                          ease: 'linear',
+                        }}
                       />
                     </svg>
                   </motion.div>
-
-                  {/* Bold Suffix "Sic" */}
-                  <motion.span
-                    className="font-brand font-black text-5xl sm:text-7xl lg:text-8xl text-white tracking-tighter"
-                    initial={{ opacity: 0, x: -24 }}
-                    animate={{
-                      opacity: phase === 'settle' ? 1 : 0,
-                      x: phase === 'settle' ? 0 : -24,
-                    }}
-                    transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-                  >
-                    Sic
-                  </motion.span>
-                </div>
-
-                {/* Symmetrical & Centered Tagline */}
-                {phase === 'settle' && (
-                  <motion.div
-                    className="w-full flex items-center justify-center text-center pt-2"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.35, duration: 0.6, ease: 'easeOut' }}
-                  >
-                    <span className="text-xs sm:text-sm font-sans font-medium uppercase tracking-[0.25em] text-text-secondary">
-                      Where music never ends
-                    </span>
-                  </motion.div>
                 )}
               </motion.div>
-            )}
+
+              {/* 3. SUFIXO "Sic" */}
+              <motion.span
+                className="inline-block overflow-hidden"
+                animate={{
+                  opacity: isNamePhase ? 1 : 0,
+                  x: isNamePhase ? 0 : 50,
+                  scale: isNamePhase ? 1 : 0.8,
+                }}
+                transition={{
+                  duration: 0.7,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+              >
+                Sic
+              </motion.span>
+            </div>
+
+            {/* Subtitle / Indicador de Carregamento */}
+            <motion.div
+              className="mt-6 text-center"
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              {isNamePhase ? (
+                <span className="text-xs sm:text-sm font-sans font-bold uppercase tracking-[0.3em] text-text-secondary">
+                  Onde a música nunca tem fim
+                </span>
+              ) : (
+                <div className="flex items-center justify-center gap-2 text-xs font-sans font-medium text-text-muted">
+                  <span className="w-2 h-2 rounded-full bg-brand-purple animate-pulse" />
+                  <span className="tracking-wider uppercase text-[11px] text-brand-light font-bold">
+                    Carregando Experiência Sonora...
+                  </span>
+                </div>
+              )}
+            </motion.div>
 
           </div>
         </motion.div>

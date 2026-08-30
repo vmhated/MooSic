@@ -1,87 +1,66 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { MooLogo } from '@/components/common/MooLogo';
 import { Button } from '@/components/ui/Button';
-import { Menu, X, Play } from 'lucide-react';
+import { Menu, X, Play, Sparkles } from 'lucide-react';
 
 interface NavbarProps {
   onStartClick?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onStartClick }) => {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 24);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
-    <header
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-background/90 backdrop-blur-xl border-b border-surface-border/80 py-3.5 shadow-2xl'
-          : 'bg-transparent py-5'
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        {/* Brand Wordmark Logo */}
+    <header className="fixed top-0 inset-x-0 z-50 px-4 sm:px-6 pt-3 sm:pt-4 pointer-events-none select-none">
+      {/* Floating Island Capsule Container com Glassmorphism */}
+      <div className="max-w-5xl mx-auto rounded-full bg-surface-elevated/80 backdrop-blur-2xl border border-white/15 hover:border-brand-purple/60 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(139,92,246,0.2)] px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between pointer-events-auto transition-all duration-300">
+        {/* Brand Wordmark Logo com Brilho Néon */}
         <a
           href="#"
-          className="flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple rounded-lg"
+          className="flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple rounded-full p-1"
           aria-label="MooSic Início"
         >
           <MooLogo size="md" />
         </a>
 
-        {/* Desktop Product Navigation */}
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-text-secondary">
+        {/* Desktop Product Navigation em Português */}
+        <nav className="hidden md:flex items-center gap-1 bg-white/[0.04] p-1 rounded-full border border-white/10 text-xs font-bold text-text-secondary">
           <a
             href="#discover"
-            className="hover:text-white transition-colors duration-200"
+            className="px-4 py-1.5 rounded-full hover:text-white hover:bg-white/10 hover:shadow-sm transition-all duration-200"
           >
-            Discover
+            Descobrir
           </a>
           <a
             href="#atmosphere"
-            className="hover:text-white transition-colors duration-200"
+            className="px-4 py-1.5 rounded-full hover:text-white hover:bg-white/10 hover:shadow-sm transition-all duration-200"
           >
-            Atmosphere
+            Atmosfera
           </a>
           <a
             href="#lyrics"
-            className="hover:text-white transition-colors duration-200"
+            className="px-4 py-1.5 rounded-full hover:text-white hover:bg-white/10 hover:shadow-sm transition-all duration-200"
           >
-            Lyrics
+            Letras
           </a>
           <a
             href="#player"
-            className="hover:text-white transition-colors duration-200"
+            className="px-4 py-1.5 rounded-full hover:text-white hover:bg-white/10 hover:shadow-sm transition-all duration-200"
           >
             Player
           </a>
         </nav>
 
-        {/* Product Action Buttons */}
-        <div className="hidden sm:flex items-center gap-4">
-          <button
-            onClick={onStartClick}
-            className="text-xs font-semibold text-text-secondary hover:text-white transition-colors px-3 py-2"
-          >
-            Log in
-          </button>
-
+        {/* Action Button Glassmorphic */}
+        <div className="hidden sm:flex items-center gap-3">
           <Button
             variant="primary"
             size="sm"
             leftIcon={<Play className="w-3.5 h-3.5 fill-current" />}
             onClick={onStartClick}
-            className="text-xs px-4 py-2 shadow-glow"
+            className="text-xs px-5 py-2.5 rounded-full font-extrabold tracking-wide"
           >
-            Start listening
+            Ouvir agora
           </Button>
         </div>
 
@@ -90,37 +69,38 @@ export const Navbar: React.FC<NavbarProps> = ({ onStartClick }) => {
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Alternar navegação"
-            className="p-2 rounded-xl bg-surface-elevated border border-surface-border text-text-secondary hover:text-white transition-colors"
+            className="p-2 rounded-full bg-white/10 border border-white/15 text-text-secondary hover:text-white transition-colors"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
         </div>
       </div>
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-surface-elevated/98 backdrop-blur-2xl border-b border-surface-border px-6 py-6 space-y-4 shadow-2xl">
-          <nav className="flex flex-col gap-4 text-base font-medium text-text-secondary">
+        <div className="md:hidden max-w-md mx-auto mt-2 rounded-3xl bg-surface-elevated/95 backdrop-blur-3xl border border-white/15 p-6 space-y-4 shadow-2xl pointer-events-auto">
+          <nav className="flex flex-col gap-3 text-sm font-semibold text-text-secondary">
             <a
               href="#discover"
               onClick={() => setMobileMenuOpen(false)}
-              className="hover:text-white transition-colors py-1"
+              className="hover:text-white transition-colors py-1 flex items-center justify-between"
             >
-              Discover
+              <span>Descobrir</span>
+              <Sparkles className="w-3.5 h-3.5 text-brand-purple" />
             </a>
             <a
               href="#atmosphere"
               onClick={() => setMobileMenuOpen(false)}
               className="hover:text-white transition-colors py-1"
             >
-              Atmosphere
+              Atmosfera
             </a>
             <a
               href="#lyrics"
               onClick={() => setMobileMenuOpen(false)}
               className="hover:text-white transition-colors py-1"
             >
-              Lyrics
+              Letras
             </a>
             <a
               href="#player"
@@ -130,7 +110,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onStartClick }) => {
               Player
             </a>
           </nav>
-          <div className="pt-4 border-t border-surface-border flex flex-col gap-3">
+          <div className="pt-3 border-t border-surface-border flex flex-col gap-2">
             <Button
               variant="primary"
               fullWidth
@@ -139,18 +119,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onStartClick }) => {
                 setMobileMenuOpen(false);
                 onStartClick?.();
               }}
+              className="rounded-full"
             >
-              Start listening
+              Ouvir agora
             </Button>
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onStartClick?.();
-              }}
-              className="text-xs font-semibold text-center text-text-secondary hover:text-white py-2"
-            >
-              Log in com sua conta
-            </button>
           </div>
         </div>
       )}

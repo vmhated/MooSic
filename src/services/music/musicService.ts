@@ -1,4 +1,6 @@
 import { IMusicProvider } from '@/providers/music/IMusicProvider';
+import { deezerMusicProvider } from '@/providers/music/deezerMusicProvider';
+import { iTunesMusicProvider } from '@/providers/music/iTunesMusicProvider';
 import { musicBrainzProvider } from '@/providers/music/musicBrainzProvider';
 import { mockMusicProvider } from '@/providers/music/mockMusicProvider';
 import { Track, Album, Artist, SearchResults } from '@/types/domain/music';
@@ -6,17 +8,21 @@ import { env } from '@/config/env';
 
 /**
  * Service de Orquestração do Domínio de Música.
- * A aplicação acessa este serviço sem conhecer qual provider está ativo.
+ * A aplicação consome este serviço de forma agnóstica ao provedor ativo.
  */
 export class MusicService {
   private activeProvider: IMusicProvider;
 
   constructor() {
-    // Define provider conforme variável de ambiente ou fallback
     if (env.musicProvider === 'mock') {
       this.activeProvider = mockMusicProvider;
-    } else {
+    } else if (env.musicProvider === 'musicbrainz') {
       this.activeProvider = musicBrainzProvider;
+    } else if (env.musicProvider === 'itunes') {
+      this.activeProvider = iTunesMusicProvider;
+    } else {
+      // Default: Deezer Catalog (100M+ faixas, todos os artistas independentes e brasileiros, capas 1000px, áudio MP3)
+      this.activeProvider = deezerMusicProvider;
     }
   }
 

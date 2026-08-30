@@ -1,6 +1,6 @@
 import React, { useRef, useCallback } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Disc3 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Disc3, Sparkles } from 'lucide-react';
 import { Track } from '@/types/domain/music';
 
 interface ArtworkCarouselProps {
@@ -55,42 +55,45 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
         }}
       />
 
-      {/* EDITORIAL SECTION HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 pb-6 border-b border-surface-border/60">
+      {/* EDITORIAL SECTION HEADER EM PORTUGUÊS */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 pb-6 border-b border-white/10">
         <div className="space-y-3 max-w-2xl">
           {/* Section Marker */}
           <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-brand-purple">01</span>
+            <span className="text-xs font-black text-brand-purple">01</span>
             <span className="h-[1px] w-6 bg-brand-purple" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
-              Discovery Flow
+            <span className="text-xs font-bold uppercase tracking-wider text-brand-light bg-white/[0.05] px-3 py-1 rounded-full border border-white/10">
+              Fluxo de Descoberta
             </span>
           </div>
 
-          {/* Heading */}
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-sans text-white tracking-tight uppercase leading-[0.98]">
-            Explore the <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-text-primary to-text-secondary">
-              unseen sound.
+          {/* Heading em Português Poético */}
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black font-sans text-white tracking-tight uppercase leading-[0.98]">
+            Explore o som <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-brand-light to-brand-purple drop-shadow-md">
+              além do visível.
             </span>
           </h2>
+          <p className="text-sm sm:text-base text-text-secondary font-sans leading-relaxed">
+            Navegue por uma galeria sonora viva. Do rap que move a cidade ao sintetizador mais profundo, cada disco tem sua própria assinatura.
+          </p>
         </div>
 
-        {/* Tactile Navigation Buttons */}
+        {/* Tactile Glassmorphic Navigation Buttons */}
         <div className="flex items-center gap-3">
           <button
             onClick={handlePrev}
             aria-label="Faixa anterior"
-            className="w-12 h-12 rounded-2xl bg-surface-elevated border border-surface-border text-text-secondary hover:text-white hover:border-brand-purple/60 flex items-center justify-center transition-all duration-200 active:scale-95 shadow-sm"
+            className="w-12 h-12 rounded-2xl bg-white/[0.06] hover:bg-white/[0.14] border border-white/15 hover:border-brand-purple/60 text-white flex items-center justify-center backdrop-blur-xl transition-all duration-200 active:scale-95 shadow-md group"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
           </button>
           <button
             onClick={handleNext}
             aria-label="Próxima faixa"
-            className="w-12 h-12 rounded-2xl bg-surface-elevated border border-surface-border text-text-secondary hover:text-white hover:border-brand-purple/60 flex items-center justify-center transition-all duration-200 active:scale-95 shadow-sm"
+            className="w-12 h-12 rounded-2xl bg-white/[0.06] hover:bg-white/[0.14] border border-white/15 hover:border-brand-purple/60 text-white flex items-center justify-center backdrop-blur-xl transition-all duration-200 active:scale-95 shadow-md group"
           >
-            <ArrowRight className="w-5 h-5" />
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
       </div>
@@ -138,44 +141,44 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
                 }}
                 whileHover={!isActive ? { scale: scale * 1.04, opacity: 0.85 } : { scale: 1.08 }}
               >
-                {/* Artwork Frame */}
+                {/* Artwork Frame com Glassmorphism */}
                 <div
-                  className={`relative w-52 h-52 sm:w-72 sm:h-72 md:w-80 md:h-80 rounded-3xl overflow-hidden bg-surface-elevated border transition-all duration-300 ${
+                  className={`relative w-48 h-48 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-80 lg:h-80 aspect-square rounded-3xl overflow-hidden bg-surface-elevated border transition-all duration-300 ${
                     isActive
-                      ? 'border-brand-purple shadow-2xl'
-                      : 'border-surface-border hover:border-text-secondary/40'
+                      ? 'border-brand-purple shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(139,92,246,0.4)]'
+                      : 'border-white/10 hover:border-white/30'
                   }`}
-                  style={{
-                    boxShadow: isActive
-                      ? `0 20px 50px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(139, 92, 246, 0.4)`
-                      : '0 10px 25px rgba(0,0,0,0.5)',
-                  }}
                 >
                   <img
                     src={track.coverUrl}
                     alt={`${track.title} - ${track.artistName}`}
-                    className="w-full h-full object-cover select-none pointer-events-none"
+                    className="w-full h-full object-cover object-center aspect-square select-none pointer-events-none"
                     loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.src =
+                        'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1000&q=85';
+                    }}
                   />
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/20 to-transparent pointer-events-none" />
 
                   {/* Top Badge */}
                   {isActive && track.badge && (
-                    <div className="absolute top-4 left-4 px-3 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-xs font-semibold text-white uppercase tracking-wider">
-                      {track.badge}
+                    <div className="absolute top-4 left-4 px-3 py-1 rounded-xl bg-black/70 backdrop-blur-md border border-white/15 text-xs font-bold text-white uppercase tracking-wider shadow-lg flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3 text-brand-purple" />
+                      <span>{track.badge}</span>
                     </div>
                   )}
 
                   {/* Track Meta at Bottom */}
                   <div className="absolute bottom-0 inset-x-0 p-5 space-y-1">
-                    <span className="text-xs font-semibold text-brand-purple uppercase tracking-wider">
-                      {track.genre || 'Music'}
+                    <span className="text-xs font-bold text-brand-light uppercase tracking-wider">
+                      {track.genre || 'Música'}
                     </span>
                     <h3 className="text-base sm:text-lg font-bold text-white font-sans truncate">
                       {track.title}
                     </h3>
-                    <p className="text-xs text-text-secondary font-sans truncate">
+                    <p className="text-xs text-text-secondary font-sans truncate font-medium">
                       {track.artistName}
                     </p>
                   </div>
@@ -186,13 +189,13 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
         </div>
       </div>
 
-      {/* Active Track Highlight Meta Bar */}
-      <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto p-4 rounded-2xl bg-surface-elevated/80 border border-surface-border backdrop-blur-md">
+      {/* Active Track Highlight Meta Bar Glassmorphic */}
+      <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto p-4 rounded-3xl bg-white/[0.04] border border-white/15 backdrop-blur-2xl shadow-xl">
         <div className="flex items-center gap-3">
           <Disc3 className="w-5 h-5 text-brand-purple animate-spin-slow" />
           <span className="text-sm font-bold text-white">{activeTrack.title}</span>
           <span className="text-text-muted">•</span>
-          <span className="text-sm text-text-secondary">{activeTrack.artistName}</span>
+          <span className="text-sm text-text-secondary font-medium">{activeTrack.artistName}</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -201,10 +204,10 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
               key={i}
               onClick={() => onActiveChange(i)}
               aria-label={`Faixa ${i + 1}`}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
+              className={`h-2 rounded-full transition-all duration-300 ${
                 i === activeIndex
-                  ? 'w-8 bg-brand-purple'
-                  : 'w-2 bg-surface-border hover:bg-text-secondary'
+                  ? 'w-8 bg-brand-purple shadow-glow'
+                  : 'w-2 bg-white/20 hover:bg-white/50'
               }`}
             />
           ))}
