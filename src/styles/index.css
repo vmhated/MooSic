@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --dynamic-vibrant: #7C3AED;
+    --dynamic-muted: #4C1D95;
+    --dynamic-dark-vibrant: #1E1B4B;
+    --dynamic-light-vibrant: #DDD6FE;
+    --dynamic-bg-start: #0A0A0C;
+    --dynamic-bg-end: #121216;
+  }
+
+  body {
+    @apply bg-surface-base text-gray-100 font-sans antialiased overflow-x-hidden;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0A0C;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #24242D;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #32323E;
+}

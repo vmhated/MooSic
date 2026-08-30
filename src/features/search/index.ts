@@ -1,0 +1,2 @@
+// Feature: Busca Global
+export {};
