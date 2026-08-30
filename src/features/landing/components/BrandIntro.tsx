@@ -12,10 +12,10 @@ export const BrandIntro: React.FC<BrandIntroProps> = ({ onComplete }) => {
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
 
-  // Fases narrativas limpas com o infinito como indicador de carregamento:
+  // Fases com timing equilibrado e centralização óptica exata:
   // 1: 'name-reveal'     (0.0s - 1.6s) -> Nome "MooSic" centralizado com "oo" destacados
-  // 2: 'infinity-loading'(1.6s - 3.8s) -> Os O's formam o ∞ que pulsa como indicador de carregamento de áudio
-  // 3: 'resolved'        (3.8s - 4.5s) -> Conclusão suave e dissolução para a Landing Page (sem zoom)
+  // 2: 'infinity-loading'(1.6s - 3.8s) -> O infinito desliza para o centro exato da tela como indicador de carregamento
+  // 3: 'resolved'        (3.8s - 4.5s) -> Conclusão suave e dissolução para a Landing Page
   const [phase, setPhase] = useState<'name-reveal' | 'infinity-loading' | 'resolved'>(
     shouldReduceMotion ? 'resolved' : 'name-reveal'
   );
@@ -51,7 +51,7 @@ export const BrandIntro: React.FC<BrandIntroProps> = ({ onComplete }) => {
       brandSound.playNameEntrySound();
     }, 200);
 
-    // 2. Os O's viram o infinito e iniciam o carregamento
+    // 2. Os O's viram o infinito e centralizam
     const t1 = setTimeout(() => {
       setPhase('infinity-loading');
       brandSound.playInfinityLoadingSound();
@@ -150,7 +150,7 @@ export const BrandIntro: React.FC<BrandIntroProps> = ({ onComplete }) => {
             </motion.div>
           )}
 
-          {/* Ambient Radial Glow */}
+          {/* Ambient Radial Glow Centralizado */}
           <motion.div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] rounded-full pointer-events-none"
             style={{
@@ -167,145 +167,114 @@ export const BrandIntro: React.FC<BrandIntroProps> = ({ onComplete }) => {
             }}
           />
 
-          {/* PALCO CENTRAL */}
-          <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-4xl px-4">
+          {/* PALCO CENTRAL PERFEITAMENTE EQUILIBRADO */}
+          <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-4xl px-4 min-h-[260px]">
             
-            {/* CONTAINER DA PALAVRA / INFINITO INDICATOR */}
-            <div className="relative flex items-center justify-center font-brand font-black text-6xl sm:text-7xl lg:text-8xl text-white tracking-tight leading-none min-h-[120px]">
-              
-              {/* 1. LETRA "M" */}
-              <motion.span
-                className="inline-block overflow-hidden"
-                animate={{
-                  opacity: isNamePhase ? 1 : 0,
-                  x: isNamePhase ? 0 : -50,
-                  scale: isNamePhase ? 1 : 0.8,
-                }}
-                transition={{
-                  duration: 0.7,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-              >
-                M
-              </motion.span>
-
-              {/* 2. OS DOIS O'S QUE SE TORNAM O INDICADOR DO INFINITO */}
+            {/* 1. FASE DE NOME: MOOSIC */}
+            {isNamePhase && (
               <motion.div
-                className="relative flex items-center justify-center mx-1 sm:mx-2"
-                animate={{
-                  scale: isLoadingPhase ? 1.05 : 1,
-                }}
-                transition={{
-                  duration: 0.6,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
+                key="name-stage"
+                className="flex items-center justify-center font-brand font-black text-6xl sm:text-7xl lg:text-8xl text-white tracking-tight leading-none"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               >
-                {/* 2A. FASE INICIAL: DOIS CÍRCULOS O'S DESTACADOS */}
-                {isNamePhase && (
-                  <div className="relative flex items-center justify-center w-28 sm:w-36 lg:w-44 h-14 sm:h-18 lg:h-22">
-                    <svg viewBox="0 0 200 100" fill="none" className="w-full h-full overflow-visible">
-                      <defs>
-                        <linearGradient id="loadOgGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#F472B6" />
-                          <stop offset="35%" stopColor="#C084FC" />
-                          <stop offset="70%" stopColor="#A855F7" />
-                          <stop offset="100%" stopColor="#6366F1" />
-                        </linearGradient>
-                      </defs>
-                      <g>
-                        {/* Círculo Esquerdo 'O' */}
-                        <circle
-                          cx="54"
-                          cy="50"
-                          r="30"
-                          stroke="url(#loadOgGrad)"
-                          strokeWidth="15"
-                        />
-                        <circle cx="54" cy="50" r="18" fill="rgba(255,255,255,0.06)" />
+                <span>M</span>
 
-                        {/* Círculo Direito 'O' */}
-                        <circle
-                          cx="146"
-                          cy="50"
-                          r="30"
-                          stroke="url(#loadOgGrad)"
-                          strokeWidth="15"
-                        />
-                        <circle cx="146" cy="50" r="18" fill="rgba(255,255,255,0.06)" />
-                      </g>
-                    </svg>
-                  </div>
-                )}
-
-                {/* 2B. FASE DE CARREGAMENTO: INFINITO COMO LOADING STREAM */}
-                {isLoadingPhase && (
-                  <motion.div
-                    className="relative flex items-center justify-center w-28 sm:w-36 lg:w-44 h-14 sm:h-18 lg:h-22"
-                    initial={{ opacity: 0, scale: 0.85 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <svg viewBox="0 0 200 100" fill="none" className="w-full h-full overflow-visible">
-                      <defs>
-                        <linearGradient id="infiniteLoadGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#F472B6" />
-                          <stop offset="35%" stopColor="#C084FC" />
-                          <stop offset="70%" stopColor="#A855F7" />
-                          <stop offset="100%" stopColor="#6366F1" />
-                        </linearGradient>
-                      </defs>
-
-                      {/* 1. Trilha Base do Infinito */}
-                      <path
-                        d="M 100 50 C 122 18, 172 18, 172 50 C 172 82, 122 82, 100 50 C 78 18, 28 18, 28 50 C 28 82, 78 82, 100 50 Z"
-                        stroke="rgba(255, 255, 255, 0.15)"
-                        strokeWidth="14"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-
-                      {/* 2. Feixe de Luz de Carregamento que Percorre o Loop Continuamente */}
-                      <motion.path
-                        d="M 100 50 C 122 18, 172 18, 172 50 C 172 82, 122 82, 100 50 C 78 18, 28 18, 28 50 C 28 82, 78 82, 100 50 Z"
-                        stroke="url(#infiniteLoadGrad)"
+                <div className="relative flex items-center justify-center w-28 sm:w-36 lg:w-44 h-14 sm:h-18 lg:h-22 mx-1 sm:mx-2">
+                  <svg viewBox="0 0 200 100" fill="none" className="w-full h-full overflow-visible">
+                    <defs>
+                      <linearGradient id="loadOgGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#F472B6" />
+                        <stop offset="35%" stopColor="#C084FC" />
+                        <stop offset="70%" stopColor="#A855F7" />
+                        <stop offset="100%" stopColor="#6366F1" />
+                      </linearGradient>
+                    </defs>
+                    <g>
+                      {/* Círculo Esquerdo 'O' */}
+                      <circle
+                        cx="54"
+                        cy="50"
+                        r="30"
+                        stroke="url(#loadOgGrad)"
                         strokeWidth="15"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        initial={{ pathLength: 0.35, pathOffset: 0 }}
-                        animate={{
-                          pathOffset: [0, 1],
-                        }}
-                        transition={{
-                          duration: 1.6,
-                          repeat: Infinity,
-                          ease: 'linear',
-                        }}
                       />
-                    </svg>
-                  </motion.div>
-                )}
+                      <circle cx="54" cy="50" r="18" fill="rgba(255,255,255,0.06)" />
+
+                      {/* Círculo Direito 'O' */}
+                      <circle
+                        cx="146"
+                        cy="50"
+                        r="30"
+                        stroke="url(#loadOgGrad)"
+                        strokeWidth="15"
+                      />
+                      <circle cx="146" cy="50" r="18" fill="rgba(255,255,255,0.06)" />
+                    </g>
+                  </svg>
+                </div>
+
+                <span>Sic</span>
               </motion.div>
+            )}
 
-              {/* 3. SUFIXO "Sic" */}
-              <motion.span
-                className="inline-block overflow-hidden"
-                animate={{
-                  opacity: isNamePhase ? 1 : 0,
-                  x: isNamePhase ? 0 : 50,
-                  scale: isNamePhase ? 1 : 0.8,
-                }}
-                transition={{
-                  duration: 0.7,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
+            {/* 2. FASE DE CARREGAMENTO: INFINITO 100% CENTRALIZADO */}
+            {isLoadingPhase && (
+              <motion.div
+                key="loading-stage"
+                className="flex flex-col items-center justify-center"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               >
-                Sic
-              </motion.span>
-            </div>
+                <div className="relative flex items-center justify-center w-36 sm:w-44 lg:w-52 h-18 sm:h-22 lg:h-26">
+                  <svg viewBox="0 0 200 100" fill="none" className="w-full h-full overflow-visible">
+                    <defs>
+                      <linearGradient id="infiniteLoadGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#F472B6" />
+                        <stop offset="35%" stopColor="#C084FC" />
+                        <stop offset="70%" stopColor="#A855F7" />
+                        <stop offset="100%" stopColor="#6366F1" />
+                      </linearGradient>
+                    </defs>
 
-            {/* Subtitle / Indicador de Carregamento */}
+                    {/* 1. Trilha Base do Infinito */}
+                    <path
+                      d="M 100 50 C 122 18, 172 18, 172 50 C 172 82, 122 82, 100 50 C 78 18, 28 18, 28 50 C 28 82, 78 82, 100 50 Z"
+                      stroke="rgba(255, 255, 255, 0.15)"
+                      strokeWidth="14"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+
+                    {/* 2. Feixe de Luz de Carregamento Contínuo */}
+                    <motion.path
+                      d="M 100 50 C 122 18, 172 18, 172 50 C 172 82, 122 82, 100 50 C 78 18, 28 18, 28 50 C 28 82, 78 82, 100 50 Z"
+                      stroke="url(#infiniteLoadGrad)"
+                      strokeWidth="15"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      initial={{ pathLength: 0.35, pathOffset: 0 }}
+                      animate={{
+                        pathOffset: [0, 1],
+                      }}
+                      transition={{
+                        duration: 1.6,
+                        repeat: Infinity,
+                        ease: 'linear',
+                      }}
+                    />
+                  </svg>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Subtitle / Indicador de Carregamento Centralizado */}
             <motion.div
-              className="mt-6 text-center"
+              className="mt-8 text-center"
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
@@ -314,7 +283,7 @@ export const BrandIntro: React.FC<BrandIntroProps> = ({ onComplete }) => {
                   Onde a música nunca tem fim
                 </span>
               ) : (
-                <div className="flex items-center justify-center gap-2 text-xs font-sans font-medium text-text-muted">
+                <div className="flex items-center justify-center gap-2.5 text-xs font-sans font-medium text-text-muted">
                   <span className="w-2 h-2 rounded-full bg-brand-purple animate-pulse" />
                   <span className="tracking-wider uppercase text-[11px] text-brand-light font-bold">
                     Carregando Experiência Sonora...
