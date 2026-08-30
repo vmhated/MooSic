@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_LYRICS_PROVIDER?: string;
   readonly VITE_AUDIO_PROVIDER?: string;
   readonly VITE_MUSICBRAINZ_API_URL?: string;
+  readonly VITE_MUSICBRAINZ_CONTACT_EMAIL?: string;
   readonly VITE_JAMENDO_CLIENT_ID?: string;
 }
 

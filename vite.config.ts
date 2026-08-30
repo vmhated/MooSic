@@ -8,10 +8,14 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      'react-native$': 'react-native-web',
     },
   },
   server: {
     port: 3000,
     open: true,
+  },
+  build: {
+    sourcemap: false, // Desativa mapas de fonte em producao para evitar exposicao de codigo no navegador
   },
 });

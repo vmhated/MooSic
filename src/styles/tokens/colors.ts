@@ -1,53 +1,45 @@
 /**
- * System Token Foundation: Cores Institucionais e Cores Dinâmicas de Música
+ * System Token Foundation: Cores Institucionais e Semânticas do MooSic
  */
 
 export const brandColors = {
   purple: {
-    50: '#F5F3FF',
-    100: '#EDE9FE',
-    200: '#DDD6FE',
-    300: '#C4B5FD',
-    400: '#A78BFA',
-    500: '#8B5CF6',
-    600: '#7C3AED', // Institutional Brand Primary
-    700: '#6D28D9',
-    800: '#5B21B6',
-    900: '#4C1D95',
+    DEFAULT: '#8B5CF6',
+    hover: '#7C3AED',
+    light: '#A78BFA',
+    dark: '#6D28D9',
   },
-  accent: '#A855F7',
 };
 
 export const uiColors = {
   dark: {
-    bgBase: '#0A0A0C',
-    bgCard: '#121216',
-    bgElevated: '#1A1A20',
-    border: '#24242D',
-    textPrimary: '#F9FAFB',
-    textSecondary: '#9CA3AF',
-    textMuted: '#6B7280',
+    bgBase: '#09090B',
+    bgSurface: '#111116',
+    bgSurfaceElevated: '#19191F',
+    border: '#292930',
+    textPrimary: '#F5F5F7',
+    textSecondary: '#B8B8C2',
+    textMuted: '#6B6B78',
   },
   light: {
     bgBase: '#FFFFFF',
-    bgCard: '#F9FAFB',
-    bgElevated: '#F3F4F6',
-    border: '#E5E7EB',
-    textPrimary: '#111827',
-    textSecondary: '#4B5563',
-    textMuted: '#9CA3AF',
+    bgSurface: '#F4F4F6',
+    bgSurfaceElevated: '#EBEBEF',
+    border: '#D4D4DC',
+    textPrimary: '#09090B',
+    textSecondary: '#52525B',
+    textMuted: '#71717A',
   },
 };
 
 /**
- * Cores Dinâmicas baseadas na Capa da Música Atualmente Reproduzida
- * Utilizam variáveis CSS para mutação em tempo de execução sem alterar o tema institucional
+ * Cores Dinâmicas por Música (Sistema preparado para a Fase 5)
  */
 export const dynamicMusicTokens = {
-  vibrant: 'var(--dynamic-vibrant, #7C3AED)',
+  vibrant: 'var(--dynamic-vibrant, #8B5CF6)',
   muted: 'var(--dynamic-muted, #4C1D95)',
   darkVibrant: 'var(--dynamic-dark-vibrant, #1E1B4B)',
   lightVibrant: 'var(--dynamic-light-vibrant, #DDD6FE)',
-  backgroundGradStart: 'var(--dynamic-bg-start, #0A0A0C)',
-  backgroundGradEnd: 'var(--dynamic-bg-end, #121216)',
+  backgroundGradStart: 'var(--dynamic-bg-start, #09090B)',
+  backgroundGradEnd: 'var(--dynamic-bg-end, #111116)',
 };

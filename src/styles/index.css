@@ -4,34 +4,34 @@
 
 @layer base {
   :root {
-    --dynamic-vibrant: #7C3AED;
+    --dynamic-vibrant: #8B5CF6;
     --dynamic-muted: #4C1D95;
     --dynamic-dark-vibrant: #1E1B4B;
     --dynamic-light-vibrant: #DDD6FE;
-    --dynamic-bg-start: #0A0A0C;
-    --dynamic-bg-end: #121216;
+    --dynamic-bg-start: #09090B;
+    --dynamic-bg-end: #111116;
   }
 
   body {
-    @apply bg-surface-base text-gray-100 font-sans antialiased overflow-x-hidden;
+    @apply bg-background text-text-primary font-sans antialiased overflow-x-hidden selection:bg-brand-purple selection:text-white;
   }
 }
 
-/* Custom scrollbars */
+/* Custom scrollbars para desktop e web */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0A0A0C;
+  background: #09090B;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #24242D;
-  border-radius: 4px;
+  background: #292930;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #32323E;
+  background: #3F3F4A;
 }

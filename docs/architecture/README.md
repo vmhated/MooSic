@@ -29,7 +29,27 @@ Este documento descreve a organização de camadas, a responsabilidade de cada d
 
 ---
 
-## 3. Como Adicionar um Novo Provedor (Ex: MusicBrainz)
+## 3. Separação de Configuração Pública e Segredos Privados 🔐
+
+Por ser uma aplicação multiplataforma (Web + APK Mobile via Expo/RN Web), **tudo o que está no código do cliente é potencialmente exposto**. A arquitetura diferencia rigorosamente:
+
+```text
+Client / Expo / Web
+├── Public configuration (Seguro no Bundle)
+│   ├── App Name & Environment Flags
+│   ├── Public API Endpoints (ex: MusicBrainz Public URL)
+│   └── Active Provider Selection Flags
+│
+└── NEVER IN CLIENT BUNDLE (Obrigatório em Backend Proxy / Server Vault)
+    ├── Private API Keys (ex: chaves pagas de áudio/letras)
+    ├── Service-Role Keys (ex: Supabase Service Role)
+    ├── Database Passwords
+    └── Signing Certificates & Private JWT Tokens
+```
+
+---
+
+## 4. Como Adicionar um Novo Provedor (Ex: MusicBrainz)
 
 1. Crie uma classe que implemente a interface do provedor em `src/providers/music/MusicBrainzProvider.ts`:
    ```typescript
@@ -51,7 +71,7 @@ Este documento descreve a organização de camadas, a responsabilidade de cada d
 
 ---
 
-## 4. Como Adicionar uma Nova Feature
+## 5. Como Adicionar uma Nova Feature
 
 1. Crie o diretório em `src/features/<nome-feature>/`.
 2. Adicione os componentes específicos da tela e exporte a página principal via `index.ts`.

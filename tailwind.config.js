@@ -8,34 +8,37 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: '#F5F3FF',
-          100: '#EDE9FE',
-          200: '#DDD6FE',
-          300: '#C4B5FD',
-          400: '#A78BFA',
-          500: '#8B5CF6',
-          600: '#7C3AED',
-          700: '#6D28D9',
-          800: '#5B21B6',
-          900: '#4C1D95',
-          DEFAULT: '#7C3AED',
-        },
+        background: '#09090B',
         surface: {
-          base: '#0A0A0C',
-          card: '#121216',
-          hover: '#1A1A20',
-          border: '#24242D',
+          DEFAULT: '#111116',
+          elevated: '#19191F',
+          border: '#292930',
+        },
+        text: {
+          primary: '#F5F5F7',
+          secondary: '#B8B8C2',
+          muted: '#6B6B78',
+        },
+        brand: {
+          DEFAULT: '#8B5CF6',
+          purple: '#8B5CF6',
+          hover: '#7C3AED',
+          light: '#A78BFA',
         },
         dynamic: {
-          vibrant: 'var(--dynamic-vibrant, #7C3AED)',
+          vibrant: 'var(--dynamic-vibrant, #8B5CF6)',
           muted: 'var(--dynamic-muted, #4C1D95)',
-          background: 'var(--dynamic-background, #0A0A0C)',
+          background: 'var(--dynamic-background, #09090B)',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        brand: ['Manrope', 'sans-serif'],
       },
+      boxShadow: {
+        glow: '0 0 24px rgba(139, 92, 246, 0.25)',
+        'glow-lg': '0 0 40px rgba(139, 92, 246, 0.35)',
+      }
     },
   },
   plugins: [],
