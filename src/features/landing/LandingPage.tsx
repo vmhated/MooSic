@@ -8,12 +8,15 @@ import { StoryLyrics } from './components/StoryLyrics';
 import { PlayerPreviewSection } from './components/PlayerPreviewSection';
 import { FinalCTASection } from './components/FinalCTASection';
 import { Footer } from './components/Footer';
-import { MOCK_HERO_TRACKS, MockTrack } from './data/mockMusicData';
+import { useFeaturedTracks } from '@/hooks/useFeaturedTracks';
+import { Track } from '@/types/domain/music';
 
 export function LandingPage() {
   const [activeTrackIndex, setActiveTrackIndex] = useState(0);
   const [showIntro, setShowIntro] = useState(true);
-  const currentTrack: MockTrack = MOCK_HERO_TRACKS[activeTrackIndex] || MOCK_HERO_TRACKS[0];
+  const { tracks } = useFeaturedTracks();
+
+  const currentTrack: Track = tracks[activeTrackIndex] || tracks[0];
 
   const handleStartListening = () => {
     const el = document.getElementById('player');
@@ -22,8 +25,8 @@ export function LandingPage() {
     }
   };
 
-  const handleSelectTrack = (track: MockTrack) => {
-    const idx = MOCK_HERO_TRACKS.findIndex((t) => t.id === track.id);
+  const handleSelectTrack = (track: Track) => {
+    const idx = tracks.findIndex((t) => t.id === track.id);
     if (idx !== -1) setActiveTrackIndex(idx);
   };
 
@@ -45,7 +48,7 @@ export function LandingPage() {
 
         {/* 2. DISCOVER WITHOUT LIMITS: Infinite Music Flow */}
         <ArtworkCarousel
-          tracks={MOCK_HERO_TRACKS}
+          tracks={tracks}
           activeIndex={activeTrackIndex}
           onActiveChange={setActiveTrackIndex}
           onTrackSelect={handleSelectTrack}
@@ -53,7 +56,7 @@ export function LandingPage() {
 
         {/* 3. DYNAMIC ATMOSPHERE: Your music. Your atmosphere. */}
         <DynamicAtmosphereSection
-          tracks={MOCK_HERO_TRACKS}
+          tracks={tracks}
           activeTrack={currentTrack}
           onSelectTrack={handleSelectTrack}
         />

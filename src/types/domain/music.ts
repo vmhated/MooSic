@@ -17,9 +17,15 @@ export interface Album {
   artistId: string;
   artistName: string;
   coverUrl: string;
-  releaseYear: number;
-  totalTracks: number;
-  genres: string[];
+  releaseYear?: number;
+  totalTracks?: number;
+  genres?: string[];
+}
+
+export interface TrackSnippetLine {
+  time: string;
+  text: string;
+  highlight?: boolean;
 }
 
 export interface Track {
@@ -29,11 +35,17 @@ export interface Track {
   artistName: string;
   albumId?: string;
   albumTitle?: string;
-  coverUrl: string;
+  coverUrl: string; // Resolved high-res artwork
   durationSeconds: number;
-  audioUrl?: string;
+  durationFormatted?: string; // e.g. '3:45'
+  audioUrl?: string; // Mock audio in Phase 2.5
+  genre?: string;
+  accent?: string; // Ambient color extraction (hex)
+  accentRgb?: string; // Ambient color extraction (rgb)
+  badge?: string;
+  lyricsSnippet?: TrackSnippetLine[]; // Mock lyrics in Phase 2.5
   isExplicit: boolean;
-  providerId: string; // Ex: 'musicbrainz', 'jamendo', 'local'
+  providerId: string; // 'musicbrainz' | 'mock'
   providerTrackId: string;
 }
 

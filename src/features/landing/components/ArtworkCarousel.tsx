@@ -1,13 +1,13 @@
 import React, { useRef, useCallback } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Disc3 } from 'lucide-react';
-import { MockTrack } from '../data/mockMusicData';
+import { Track } from '@/types/domain/music';
 
 interface ArtworkCarouselProps {
-  tracks: MockTrack[];
+  tracks: Track[];
   activeIndex: number;
   onActiveChange: (index: number) => void;
-  onTrackSelect?: (track: MockTrack) => void;
+  onTrackSelect?: (track: Track) => void;
 }
 
 export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
@@ -51,7 +51,7 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
       <motion.div
         className="absolute top-1/2 left-1/3 -translate-y-1/2 w-[600px] h-[450px] rounded-full blur-[170px] pointer-events-none opacity-20 transition-colors duration-700 -z-10"
         style={{
-          background: `radial-gradient(circle at center, ${activeTrack.accent} 0%, transparent 70%)`,
+          background: `radial-gradient(circle at center, ${activeTrack.accent || '#8B5CF6'} 0%, transparent 70%)`,
         }}
       />
 
@@ -152,8 +152,8 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
                   }}
                 >
                   <img
-                    src={track.artwork}
-                    alt={`${track.title} - ${track.artist}`}
+                    src={track.coverUrl}
+                    alt={`${track.title} - ${track.artistName}`}
                     className="w-full h-full object-cover select-none pointer-events-none"
                     loading="lazy"
                   />
@@ -170,13 +170,13 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
                   {/* Track Meta at Bottom */}
                   <div className="absolute bottom-0 inset-x-0 p-5 space-y-1">
                     <span className="text-xs font-semibold text-brand-purple uppercase tracking-wider">
-                      {track.genre}
+                      {track.genre || 'Music'}
                     </span>
                     <h3 className="text-base sm:text-lg font-bold text-white font-sans truncate">
                       {track.title}
                     </h3>
                     <p className="text-xs text-text-secondary font-sans truncate">
-                      {track.artist}
+                      {track.artistName}
                     </p>
                   </div>
                 </div>
@@ -192,7 +192,7 @@ export const ArtworkCarousel: React.FC<ArtworkCarouselProps> = ({
           <Disc3 className="w-5 h-5 text-brand-purple animate-spin-slow" />
           <span className="text-sm font-bold text-white">{activeTrack.title}</span>
           <span className="text-text-muted">•</span>
-          <span className="text-sm text-text-secondary">{activeTrack.artist}</span>
+          <span className="text-sm text-text-secondary">{activeTrack.artistName}</span>
         </div>
 
         <div className="flex items-center gap-2">

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Mic2 } from 'lucide-react';
-import { MockTrack } from '../data/mockMusicData';
+import { Track } from '@/types/domain/music';
 
 interface StoryLyricsProps {
-  currentTrack: MockTrack;
+  currentTrack: Track;
 }
 
 export const StoryLyrics: React.FC<StoryLyricsProps> = ({ currentTrack }) => {
@@ -55,13 +55,13 @@ export const StoryLyrics: React.FC<StoryLyricsProps> = ({ currentTrack }) => {
           <div className="flex items-center justify-between pb-6 border-b border-surface-border/60">
             <div className="flex items-center gap-4">
               <img
-                src={currentTrack.artwork}
+                src={currentTrack.coverUrl}
                 alt={currentTrack.title}
                 className="w-14 h-14 rounded-2xl object-cover border border-surface-border shadow-md"
               />
               <div className="min-w-0">
                 <h4 className="text-lg font-bold text-white font-sans truncate">{currentTrack.title}</h4>
-                <p className="text-xs text-text-secondary font-sans truncate">{currentTrack.artist}</p>
+                <p className="text-xs text-text-secondary font-sans truncate">{currentTrack.artistName}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-purple/20 border border-brand-purple/40 text-xs font-semibold text-brand-light">

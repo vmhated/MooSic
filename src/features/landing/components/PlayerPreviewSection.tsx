@@ -13,12 +13,12 @@ import {
   ListMusic,
   Sliders,
 } from 'lucide-react';
-import { MockTrack } from '../data/mockMusicData';
+import { Track } from '@/types/domain/music';
 import { Slider } from '@/components/ui/Slider';
 import { Badge } from '@/components/ui/Badge';
 
 interface PlayerPreviewSectionProps {
-  currentTrack: MockTrack;
+  currentTrack: Track;
 }
 
 export const PlayerPreviewSection: React.FC<PlayerPreviewSectionProps> = ({ currentTrack }) => {
@@ -73,7 +73,7 @@ export const PlayerPreviewSection: React.FC<PlayerPreviewSectionProps> = ({ curr
           <div className="flex items-center gap-5">
             <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-surface-border shrink-0 shadow-xl group">
               <img
-                src={currentTrack.artwork}
+                src={currentTrack.coverUrl}
                 alt={currentTrack.title}
                 className="w-full h-full object-cover"
               />
@@ -91,7 +91,7 @@ export const PlayerPreviewSection: React.FC<PlayerPreviewSectionProps> = ({ curr
                 )}
               </div>
               <p className="text-sm text-text-secondary font-sans">
-                {currentTrack.artist} • <span className="text-text-muted">{currentTrack.album}</span>
+                {currentTrack.artistName} • <span className="text-text-muted">{currentTrack.albumTitle || 'Single'}</span>
               </p>
             </div>
           </div>
@@ -122,7 +122,7 @@ export const PlayerPreviewSection: React.FC<PlayerPreviewSectionProps> = ({ curr
           <Slider value={progress} onChange={setProgress} />
           <div className="flex justify-between text-xs font-sans text-text-muted">
             <span>1:36</span>
-            <span>{currentTrack.duration}</span>
+            <span>{currentTrack.durationFormatted || '3:45'}</span>
           </div>
         </div>
 

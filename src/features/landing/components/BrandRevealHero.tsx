@@ -2,11 +2,11 @@ import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { Play, ArrowUpRight, Disc } from 'lucide-react';
-import { MockTrack } from '../data/mockMusicData';
+import { Track } from '@/types/domain/music';
 
 interface BrandRevealHeroProps {
   onStartClick?: () => void;
-  activeTrack: MockTrack;
+  activeTrack: Track;
 }
 
 export const BrandRevealHero: React.FC<BrandRevealHeroProps> = ({
@@ -14,6 +14,8 @@ export const BrandRevealHero: React.FC<BrandRevealHeroProps> = ({
   activeTrack,
 }) => {
   const shouldReduceMotion = useReducedMotion();
+  const artworkSrc = activeTrack.coverUrl;
+  const accentColor = activeTrack.accent || '#8B5CF6';
 
   return (
     <section
@@ -24,7 +26,7 @@ export const BrandRevealHero: React.FC<BrandRevealHeroProps> = ({
       <motion.div
         className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[650px] h-[550px] rounded-full blur-[180px] pointer-events-none opacity-20 transition-colors duration-1000 -z-10"
         style={{
-          background: `radial-gradient(circle at center, ${activeTrack.accent} 0%, transparent 75%)`,
+          background: `radial-gradient(circle at center, ${accentColor} 0%, transparent 75%)`,
         }}
       />
 
@@ -113,7 +115,7 @@ export const BrandRevealHero: React.FC<BrandRevealHeroProps> = ({
           <div className="lg:col-span-5 relative flex items-center justify-center">
             <div className="relative w-full max-w-xs sm:max-w-sm aspect-square rounded-3xl overflow-hidden border border-surface-border shadow-2xl bg-surface-elevated group">
               <img
-                src={activeTrack.artwork}
+                src={artworkSrc}
                 alt={activeTrack.title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 loading="lazy"
@@ -135,13 +137,13 @@ export const BrandRevealHero: React.FC<BrandRevealHeroProps> = ({
               {/* Bottom Meta Overlay */}
               <div className="absolute bottom-0 inset-x-0 p-5 space-y-1">
                 <span className="text-xs font-semibold text-brand-light uppercase tracking-wider">
-                  {activeTrack.genre} • {activeTrack.badge}
+                  {activeTrack.genre || 'Lossless Audio'} • {activeTrack.badge || 'MusicBrainz'}
                 </span>
                 <h3 className="text-xl font-bold text-white font-sans truncate">
                   {activeTrack.title}
                 </h3>
                 <p className="text-xs text-text-secondary font-sans truncate">
-                  {activeTrack.artist}
+                  {activeTrack.artistName}
                 </p>
               </div>
             </div>

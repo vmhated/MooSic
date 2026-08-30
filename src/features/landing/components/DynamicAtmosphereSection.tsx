@@ -1,12 +1,12 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Waves, Sparkles } from 'lucide-react';
-import { MockTrack } from '../data/mockMusicData';
+import { Track } from '@/types/domain/music';
 
 interface DynamicAtmosphereSectionProps {
-  tracks: MockTrack[];
-  activeTrack: MockTrack;
-  onSelectTrack: (track: MockTrack) => void;
+  tracks: Track[];
+  activeTrack: Track;
+  onSelectTrack: (track: Track) => void;
 }
 
 export const DynamicAtmosphereSection: React.FC<DynamicAtmosphereSectionProps> = ({
@@ -15,6 +15,7 @@ export const DynamicAtmosphereSection: React.FC<DynamicAtmosphereSectionProps> =
   onSelectTrack,
 }) => {
   const shouldReduceMotion = useReducedMotion();
+  const accentColor = activeTrack.accent || '#8B5CF6';
 
   return (
     <section
@@ -25,7 +26,7 @@ export const DynamicAtmosphereSection: React.FC<DynamicAtmosphereSectionProps> =
       <motion.div
         className="absolute top-1/2 right-10 -translate-y-1/2 w-[600px] h-[480px] rounded-full blur-[170px] pointer-events-none opacity-20 transition-colors duration-700 -z-10"
         style={{
-          background: `radial-gradient(circle at center, ${activeTrack.accent} 0%, transparent 75%)`,
+          background: `radial-gradient(circle at center, ${accentColor} 0%, transparent 75%)`,
         }}
       />
 
@@ -78,7 +79,7 @@ export const DynamicAtmosphereSection: React.FC<DynamicAtmosphereSectionProps> =
                   >
                     <span
                       className="w-3 h-3 rounded-full shrink-0 shadow-sm"
-                      style={{ backgroundColor: t.accent }}
+                      style={{ backgroundColor: t.accent || '#8B5CF6' }}
                     />
                     <span className="font-sans font-semibold">{t.title}</span>
                   </button>
@@ -102,26 +103,26 @@ export const DynamicAtmosphereSection: React.FC<DynamicAtmosphereSectionProps> =
           {/* Top Accent Strip */}
           <div
             className="absolute top-0 inset-x-0 h-1 transition-colors duration-700"
-            style={{ backgroundColor: activeTrack.accent }}
+            style={{ backgroundColor: accentColor }}
           />
 
           <div className="flex items-center gap-5 mb-8">
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-surface-border shrink-0 shadow-lg">
               <img
-                src={activeTrack.artwork}
+                src={activeTrack.coverUrl}
                 alt={activeTrack.title}
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="space-y-1 min-w-0">
               <span className="text-xs font-semibold text-brand-purple uppercase tracking-wider">
-                {activeTrack.genre}
+                {activeTrack.genre || 'Lossless Sound'}
               </span>
               <h3 className="text-2xl font-bold text-white font-sans truncate">
                 {activeTrack.title}
               </h3>
               <p className="text-sm text-text-secondary font-sans truncate">
-                {activeTrack.artist} • {activeTrack.album}
+                {activeTrack.artistName} • {activeTrack.albumTitle || 'Álbum'}
               </p>
             </div>
           </div>
@@ -142,7 +143,7 @@ export const DynamicAtmosphereSection: React.FC<DynamicAtmosphereSectionProps> =
                   key={i}
                   className="flex-1 rounded-full transition-colors duration-700"
                   style={{
-                    backgroundColor: activeTrack.accent,
+                    backgroundColor: accentColor,
                     opacity: 0.7 + (i % 3) * 0.1,
                   }}
                   animate={
