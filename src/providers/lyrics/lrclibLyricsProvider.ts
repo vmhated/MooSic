@@ -24,22 +24,24 @@ export function parseLrcLyrics(lrcString: string): TrackSnippetLine[] {
 
   const lines = lrcString.split('\n');
   const result: LrcEntry[] = [];
-  const timeRegex = /\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\]/g;
 
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed) continue;
 
+    // Suporta minutos com 1 ou 2 dígitos: [0:15.20] ou [00:15.20]
+    const timeRegex = /\[(\d{1,2}):(\d{2})(?:\.(\d{1,3}))?\]/g;
     const matches = Array.from(trimmed.matchAll(timeRegex));
     if (matches.length === 0) continue;
 
-    const text = trimmed.replace(timeRegex, '').trim();
+    const text = trimmed.replace(/\[\d{1,2}:\d{2}(?:\.\d{1,3})?\]/g, '').trim();
     if (!text || text === '♪' || text === '...' || text.startsWith('Paroles de') || text.startsWith('Lyrics')) continue;
 
     for (const match of matches) {
-      const minutes = parseInt(match[1], 10);
-      const seconds = parseInt(match[2], 10);
-      const totalSeconds = minutes * 60 + seconds;
+      const minutes = parseInt(match[1], 10) || 0;
+      const seconds = parseInt(match[2], 10) || 0;
+      const millis = match[3] ? parseInt(match[3].padEnd(3, '0').slice(0, 3), 10) / 1000 : 0;
+      const totalSeconds = minutes * 60 + seconds + millis;
       const formatted = formatSecondsToTime(totalSeconds);
 
       result.push({
@@ -84,12 +86,13 @@ export class LrclibLyricsProvider {
 
     try {
       let url = `https://lrclib.net/api/get?track_name=${encodeURIComponent(cleanTitle)}&artist_name=${encodeURIComponent(cleanArtist)}`;
-      if (durationSeconds && durationSeconds > 0) {
+      // Apenas adiciona duration se for a duração completa da música (LRCLIB descarta previews de 30s)
+      if (durationSeconds && durationSeconds > 45) {
         url += `&duration=${durationSeconds}`;
       }
 
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 4000);
+      const timer = setTimeout(() => controller.abort(), 2500);
 
       const res = await fetch(url, {
         signal: controller.signal,
@@ -107,41 +110,50 @@ export class LrclibLyricsProvider {
             this.cache.set(cacheKey, parsed);
             return parsed;
           }
-        } else if (data.plainLyrics) {
-          const lines = data.plainLyrics
-            .split('\n')
-            .map((l: string) => l.trim())
-            .filter((l: string) => l.length > 0)
-            .slice(0, 16);
-
-          const fallbackParsed: TrackSnippetLine[] = lines.map((text: string, i: number) => ({
-            time: formatSecondsToTime(12 + i * 16),
-            text,
-            highlight: i === 1,
-          }));
-
-          if (fallbackParsed.length > 0) {
-            this.cache.set(cacheKey, fallbackParsed);
-            return fallbackParsed;
-          }
         }
       }
 
-      // Se a busca exata falhar, tenta busca ampla no LRCLIB
+      // Se a busca direta não tiver syncedLyrics, tenta a busca ampla do LRCLIB para achar a versão sincronizada
+      const searchController = new AbortController();
+      const searchTimer = setTimeout(() => searchController.abort(), 2500);
+
       const searchUrl = `https://lrclib.net/api/search?q=${encodeURIComponent(`${cleanArtist} ${cleanTitle}`)}`;
       const searchRes = await fetch(searchUrl, {
+        signal: searchController.signal,
         headers: { 'User-Agent': 'MooSic/1.0.0 (https://moosic.app)' },
       });
+      clearTimeout(searchTimer);
 
       if (searchRes.ok) {
         const searchList = await searchRes.json();
         if (Array.isArray(searchList) && searchList.length > 0) {
-          const first = searchList.find((s) => s.syncedLyrics) || searchList[0];
-          if (first && first.syncedLyrics) {
-            const parsed = parseLrcLyrics(first.syncedLyrics);
+          const syncedItem = searchList.find((s) => s.syncedLyrics);
+          if (syncedItem && syncedItem.syncedLyrics) {
+            const parsed = parseLrcLyrics(syncedItem.syncedLyrics);
             if (parsed.length > 0) {
               this.cache.set(cacheKey, parsed);
               return parsed;
+            }
+          }
+
+          // Se nenhuma versão tiver letras sincronizadas, verifica se alguma tem plainLyrics
+          const plainItem = searchList.find((s) => s.plainLyrics);
+          if (plainItem && plainItem.plainLyrics) {
+            const lines = plainItem.plainLyrics
+              .split('\n')
+              .map((l: string) => l.trim())
+              .filter((l: string) => l.length > 0)
+              .slice(0, 30);
+
+            const fallbackParsed: TrackSnippetLine[] = lines.map((text: string, i: number) => ({
+              time: formatSecondsToTime(10 + i * 10),
+              text,
+              highlight: i === 1,
+            }));
+
+            if (fallbackParsed.length > 0) {
+              this.cache.set(cacheKey, fallbackParsed);
+              return fallbackParsed;
             }
           }
         }

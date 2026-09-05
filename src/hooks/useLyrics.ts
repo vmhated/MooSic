@@ -12,13 +12,19 @@ export interface UseLyricsResult {
 /**
  * Hook para carregar e co-relacionar letras sincronizadas em tempo real via LRCLIB
  */
+function isValidSnippet(snippet?: TrackSnippetLine[]): boolean {
+  if (!snippet || snippet.length === 0) return false;
+  return !snippet.some((l) => l.text.includes('Lost in the rhythm'));
+}
+
 export function useLyrics(track: Track): UseLyricsResult {
+  const initialValid = isValidSnippet(track.lyricsSnippet);
   const [lines, setLines] = useState<TrackSnippetLine[]>(() => {
-    return track.lyricsSnippet || [];
+    return initialValid && track.lyricsSnippet ? track.lyricsSnippet : [];
   });
   const [loading, setLoading] = useState(false);
   const [isRealSynced, setIsRealSynced] = useState(false);
-  const [hasLyrics, setHasLyrics] = useState(true);
+  const [hasLyrics, setHasLyrics] = useState(initialValid);
 
   useEffect(() => {
     let isMounted = true;
@@ -40,7 +46,7 @@ export function useLyrics(track: Track): UseLyricsResult {
             setLines(realSynced);
             setIsRealSynced(true);
             setHasLyrics(true);
-          } else if (track.lyricsSnippet && track.lyricsSnippet.length > 0) {
+          } else if (isValidSnippet(track.lyricsSnippet) && track.lyricsSnippet) {
             setLines(track.lyricsSnippet);
             setIsRealSynced(false);
             setHasLyrics(true);
@@ -52,7 +58,7 @@ export function useLyrics(track: Track): UseLyricsResult {
         }
       } catch {
         if (isMounted) {
-          if (track.lyricsSnippet && track.lyricsSnippet.length > 0) {
+          if (isValidSnippet(track.lyricsSnippet) && track.lyricsSnippet) {
             setLines(track.lyricsSnippet);
             setIsRealSynced(false);
             setHasLyrics(true);

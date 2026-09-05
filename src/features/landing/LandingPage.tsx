@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from '@/app/routes/router';
+import { usePlayer } from '@/stores/playerContext';
 import { Navbar } from './components/Navbar';
 import { BrandIntro } from './components/BrandIntro';
 import { BrandRevealHero } from './components/BrandRevealHero';
@@ -10,10 +12,13 @@ import { InfiniteDissolveLoop } from '@/components/common/InfiniteDissolveLoop';
 import { FinalCTASection } from './components/FinalCTASection';
 import { Footer } from './components/Footer';
 import { ApiInspector } from '@/components/common/ApiInspector';
+import { PersistentBottomPlayer } from '@/components/player';
 import { useFeaturedTracks } from '@/hooks/useFeaturedTracks';
 import { Track } from '@/types/domain/music';
 
 export function LandingPage() {
+  const { navigate } = useRouter();
+  const { play, currentTrack: globalTrack } = usePlayer();
   const [activeTrackIndex, setActiveTrackIndex] = useState(0);
   const [trackList, setTrackList] = useState<Track[]>([]);
   const [showIntro, setShowIntro] = useState(true);
@@ -29,27 +34,29 @@ export function LandingPage() {
   const activeTracks = trackList.length > 0 ? trackList : initialTracks;
   const currentTrack: Track = activeTracks[activeTrackIndex] || activeTracks[0];
 
+  // Inicia o Web Player ao clicar em Ouvir Agora
   const handleStartListening = () => {
-    const el = document.getElementById('player');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+    if (currentTrack) {
+      play(currentTrack);
     }
+    navigate('/app');
   };
 
   /**
    * Quando uma música é selecionada no carrossel ou aplicada pela busca do Deezer:
    * 1. Se já está na lista, ativa o índice dela.
    * 2. Se for uma nova música (ex: Caio Ocean), adiciona ao topo da lista do carrossel e ativa ela!
+   * 3. Dispara a reprodução no motor global de áudio.
    */
   const handleSelectTrack = (track: Track) => {
     const existingIndex = activeTracks.findIndex((t) => t.id === track.id);
     if (existingIndex !== -1) {
       setActiveTrackIndex(existingIndex);
     } else {
-      // Insere a nova música no início do carrossel e ativa ela
       setTrackList([track, ...activeTracks.filter((t) => t.id !== track.id)]);
       setActiveTrackIndex(0);
     }
+    play(track);
   };
 
   return (
@@ -61,7 +68,7 @@ export function LandingPage() {
       <Navbar onStartClick={handleStartListening} />
 
       {/* Main Single Narrative Flow */}
-      <main className={`relative transition-all duration-700 ${showIntro ? 'filter blur-sm contrast-90 pointer-events-none' : ''}`}>
+      <main className={`relative transition-all duration-700 ${showIntro ? 'filter blur-sm contrast-90 pointer-events-none' : ''} ${globalTrack ? 'pb-24' : ''}`}>
         {/* 1. HERO EXPERIENCE: O som no fluxo do infinito */}
         <BrandRevealHero
           activeTrack={currentTrack}
@@ -104,6 +111,9 @@ export function LandingPage() {
         activeTrack={currentTrack}
         onApplyTrack={handleSelectTrack}
       />
+
+      {/* Player Persistente Fixo no Rodapé (se houver música ativa) */}
+      {globalTrack && <PersistentBottomPlayer />}
     </div>
   );
 }

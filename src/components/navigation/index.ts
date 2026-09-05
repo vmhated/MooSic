@@ -1,2 +1,2 @@
-// Componentes de Navegação (Sidebar, Header, BottomNav Mobile)
-export {};
+export { Sidebar } from './Sidebar';
+export { Topbar } from './Topbar';

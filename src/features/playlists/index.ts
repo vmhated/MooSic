@@ -1,2 +1,1 @@
-// Feature: Gerenciamento e Visualização de Playlists
-export {};
+export { PlaylistView } from './PlaylistView';

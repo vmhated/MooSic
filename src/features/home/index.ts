@@ -1,2 +1,1 @@
-// Feature: Home / Página Inicial
-export {};
+export { HomePage } from './HomePage';

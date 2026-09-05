@@ -70,12 +70,7 @@ export class DeezerAdapter {
       accent: palette.accent,
       accentRgb: palette.rgb,
       badge: item.explicit_lyrics ? 'Explicit • Hi-Res' : 'Hi-Res Master',
-      lyricsSnippet: [
-        { time: '0:14', text: `Lost in the rhythm of ${title}` },
-        { time: '0:32', text: `Where the sound of ${artistName} takes control`, highlight: true },
-        { time: '0:50', text: `Echoes of ${albumTitle} through the open sky` },
-        { time: '1:10', text: 'Music that moves without limits' },
-      ],
+      lyricsSnippet: undefined,
       isExplicit: Boolean(item.explicit_lyrics),
       providerId: 'deezer',
       providerTrackId: String(item.id || hash),

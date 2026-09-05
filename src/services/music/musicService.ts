@@ -1,4 +1,5 @@
 import { IMusicProvider } from '@/providers/music/IMusicProvider';
+import { hybridMusicProvider } from '@/providers/music/hybridMusicProvider';
 import { deezerMusicProvider } from '@/providers/music/deezerMusicProvider';
 import { iTunesMusicProvider } from '@/providers/music/iTunesMusicProvider';
 import { musicBrainzProvider } from '@/providers/music/musicBrainzProvider';
@@ -20,9 +21,11 @@ export class MusicService {
       this.activeProvider = musicBrainzProvider;
     } else if (env.musicProvider === 'itunes') {
       this.activeProvider = iTunesMusicProvider;
-    } else {
-      // Default: Deezer Catalog (100M+ faixas, todos os artistas independentes e brasileiros, capas 1000px, áudio MP3)
+    } else if (env.musicProvider === 'deezer') {
       this.activeProvider = deezerMusicProvider;
+    } else {
+      // Default: Federated Hybrid Engine (Busca paralela simultânea Apple Music + Deezer 100M+ com desduplicação)
+      this.activeProvider = hybridMusicProvider;
     }
   }
 

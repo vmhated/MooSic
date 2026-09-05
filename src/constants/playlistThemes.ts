@@ -1,0 +1,91 @@
+import { PlaylistTheme, PlaylistThemeId, ResonatorPreset } from '@/types/domain/playlist';
+
+export const PLAYLIST_THEMES: Record<PlaylistThemeId, PlaylistTheme> = {
+  'cyberpunk-neon': {
+    id: 'cyberpunk-neon',
+    name: 'Cyberpunk Neon',
+    gradient: 'from-fuchsia-600 via-purple-600 to-indigo-900',
+    accent: '#D946EF',
+    bgGlow: 'rgba(217, 70, 239, 0.35)',
+    iconName: 'Zap',
+  },
+  'sunset-gold': {
+    id: 'sunset-gold',
+    name: 'Sunset Gold',
+    gradient: 'from-amber-500 via-orange-600 to-rose-900',
+    accent: '#F59E0B',
+    bgGlow: 'rgba(245, 158, 11, 0.35)',
+    iconName: 'Flame',
+  },
+  'midnight-velvet': {
+    id: 'midnight-velvet',
+    name: 'Midnight Velvet',
+    gradient: 'from-indigo-600 via-violet-700 to-slate-950',
+    accent: '#8B5CF6',
+    bgGlow: 'rgba(139, 92, 246, 0.35)',
+    iconName: 'Radio',
+  },
+  'emerald-focus': {
+    id: 'emerald-focus',
+    name: 'Emerald Focus',
+    gradient: 'from-emerald-500 via-teal-700 to-slate-900',
+    accent: '#10B981',
+    bgGlow: 'rgba(16, 185, 129, 0.35)',
+    iconName: 'Compass',
+  },
+  'solar-flare': {
+    id: 'solar-flare',
+    name: 'Solar Flare',
+    gradient: 'from-rose-500 via-pink-600 to-purple-900',
+    accent: '#F43F5E',
+    bgGlow: 'rgba(244, 63, 94, 0.35)',
+    iconName: 'Sparkles',
+  },
+  'cosmic-blue': {
+    id: 'cosmic-blue',
+    name: 'Cosmic Blue',
+    gradient: 'from-cyan-500 via-blue-600 to-indigo-950',
+    accent: '#06B6D4',
+    bgGlow: 'rgba(6, 182, 212, 0.35)',
+    iconName: 'Disc',
+  },
+};
+
+export const RESONATOR_PRESETS: ResonatorPreset[] = [
+  {
+    id: '432hz',
+    name: '432 Hz • Sintonia Universal',
+    tag: 'Harmonia & Relaxamento',
+    frequency: 432,
+    description: 'A frequência do universo. Reduz ansiedade, acalma a mente e alinha a vibração orgânica com a música.',
+    color: 'from-emerald-500 to-teal-700',
+    bgGlow: 'rgba(16, 185, 129, 0.3)',
+  },
+  {
+    id: '528hz',
+    name: '528 Hz • Frequência Milagrosa',
+    tag: 'Restauração & Clareza',
+    frequency: 528,
+    description: 'Frequência de transformação e reparo profundo. Estimula a criatividade e amplifica a percepção harmônica.',
+    color: 'from-cyan-500 to-blue-700',
+    bgGlow: 'rgba(6, 182, 212, 0.3)',
+  },
+  {
+    id: 'alpha10hz',
+    name: '10 Hz Alfa • Pulso Cerebral',
+    tag: 'Foco Profundo & Fluidez',
+    frequency: 10,
+    description: 'Binaural beat de 10Hz (portadora de 200Hz) sincroniza os hemisférios cerebrais para foco ininterrupto.',
+    color: 'from-purple-500 to-indigo-800',
+    bgGlow: 'rgba(168, 85, 247, 0.3)',
+  },
+  {
+    id: 'brown-noise',
+    name: 'Ruído Marrom • Manto Acústico',
+    tag: 'Isolamento & Sono/Estudo',
+    frequency: 0,
+    description: 'Manto de baixas frequências profundas e aveludadas que isola distrações externas de forma natural.',
+    color: 'from-amber-600 to-orange-900',
+    bgGlow: 'rgba(217, 119, 6, 0.3)',
+  },
+];

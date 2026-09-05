@@ -285,12 +285,7 @@ export class MusicBrainzAdapter {
       accent: palette.accent,
       accentRgb: palette.rgb,
       badge: 'MusicBrainz Verified',
-      lyricsSnippet: [
-        { time: '0:14', text: `Lost in the rhythm of ${title}` },
-        { time: '0:32', text: `Where the sound of ${artistName} takes control`, highlight: true },
-        { time: '0:50', text: 'Echoes drifting through the infinite night' },
-        { time: '1:12', text: 'Caught inside the resonance and light' },
-      ],
+      lyricsSnippet: undefined,
       isExplicit: Boolean(raw.disambiguation?.toLowerCase().includes('explicit')),
       providerId: 'musicbrainz',
       providerTrackId: raw.id,

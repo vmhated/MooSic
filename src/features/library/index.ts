@@ -1,2 +1,1 @@
-// Feature: Biblioteca Pessoal & Favoritos
-export {};
+export { LibraryPage } from './LibraryPage';

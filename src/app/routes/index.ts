@@ -1,2 +1,1 @@
-// Ponto de exportação para definição de rotas da aplicação
-export {};
+export * from './router';

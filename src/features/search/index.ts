@@ -1,2 +1,1 @@
-// Feature: Busca Global
-export {};
+export { SearchPage } from './SearchPage';

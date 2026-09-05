@@ -66,12 +66,7 @@ export class ITunesAdapter {
       accent: palette.accent,
       accentRgb: palette.rgb,
       badge: item.trackExplicitness === 'explicit' ? 'Explicit • Hi-Res' : 'Hi-Res Lossless',
-      lyricsSnippet: [
-        { time: '0:12', text: `Lost in the rhythm of ${title}` },
-        { time: '0:28', text: `Where the sound of ${artistName} takes control`, highlight: true },
-        { time: '0:45', text: `Echoes of ${albumTitle} through the open sky` },
-        { time: '1:02', text: 'Music that moves without limits' },
-      ],
+      lyricsSnippet: undefined,
       isExplicit: item.trackExplicitness === 'explicit',
       providerId: 'itunes',
       providerTrackId: String(item.trackId || hash),

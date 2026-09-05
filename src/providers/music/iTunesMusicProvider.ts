@@ -69,16 +69,16 @@ export class ITunesMusicProvider implements IMusicProvider {
     }
 
     try {
-      const url = `https://itunes.apple.com/search?term=${encodeURIComponent(clean)}&entity=song&limit=25`;
-      const data = await this.fetchJson<any>(url);
+      const url = `https://itunes.apple.com/search?term=${encodeURIComponent(clean)}&entity=song&limit=40`;
+      const data = await this.fetchJson<any>(url, 3000);
 
       if (data && data.results && data.results.length > 0) {
         return ITunesAdapter.toDomainSearchResults(data.results);
       }
 
-      return mockMusicProvider.search(query);
+      return { tracks: [], artists: [], albums: [], playlists: [] };
     } catch {
-      return mockMusicProvider.search(query);
+      return { tracks: [], artists: [], albums: [], playlists: [] };
     }
   }
 

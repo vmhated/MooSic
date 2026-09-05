@@ -17,9 +17,9 @@ export class DeezerMusicProvider implements IMusicProvider {
   private cache: Map<string, CacheEntry<any>> = new Map();
 
   /**
-   * Executa busca via JSONP no browser para garantir 0 bloqueios de CORS e velocidade máxima
+   * Executa busca via JSONP no browser com timeout de 2500ms
    */
-  private fetchJsonp<T>(url: string, timeoutMs = 5000): Promise<T | null> {
+  private fetchJsonp<T>(url: string, timeoutMs = 2500): Promise<T | null> {
     const cached = this.cache.get(url);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
       return Promise.resolve(cached.data as T);
@@ -101,16 +101,16 @@ export class DeezerMusicProvider implements IMusicProvider {
     }
 
     try {
-      const url = `https://api.deezer.com/search?q=${encodeURIComponent(clean)}&limit=30`;
+      const url = `https://api.deezer.com/search?q=${encodeURIComponent(clean)}&limit=40`;
       const data = await this.fetchJsonp<any>(url);
 
       if (data && data.data && data.data.length > 0) {
         return DeezerAdapter.toDomainSearchResults(data.data);
       }
 
-      return mockMusicProvider.search(query);
+      return { tracks: [], artists: [], albums: [], playlists: [] };
     } catch {
-      return mockMusicProvider.search(query);
+      return { tracks: [], artists: [], albums: [], playlists: [] };
     }
   }
 

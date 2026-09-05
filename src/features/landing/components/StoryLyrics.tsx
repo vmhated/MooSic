@@ -211,10 +211,10 @@ export const StoryLyrics: React.FC<StoryLyricsProps> = ({ currentTrack }) => {
               </div>
               <div className="space-y-1 max-w-md">
                 <h4 className="text-xl font-black text-white font-sans">
-                  Experiência Sonora Pura
+                  Ainda não sabemos cantar essa
                 </h4>
                 <p className="text-xs sm:text-sm text-text-secondary font-sans leading-relaxed">
-                  Esta faixa é instrumental ou suas letras estão em processo de catalogação. Deixe a melodia de <strong className="text-white">{currentTrack.title}</strong> conduzir a sua atmosfera.
+                  Esta faixa é instrumental ou suas letras ainda não foram catalogadas. Deixe a melodia de <strong className="text-white">{currentTrack.title}</strong> conduzir a sua atmosfera.
                 </p>
               </div>
               {/* Animated resonance equalizer */}
