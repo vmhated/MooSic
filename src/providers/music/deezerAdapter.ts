@@ -62,7 +62,7 @@ export class DeezerAdapter {
       artistName,
       albumId: String(item.album?.id || `deezer-album-${hash}`),
       albumTitle,
-      coverUrl: coverUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1000&q=85',
+      coverUrl: coverUrl || 'https://cdn-images.dzcdn.net/images/cover/9ad06bcb9f0bfe52bbd5e6ff464e4ca4/1000x1000-000000-80-0-0.jpg',
       durationSeconds,
       durationFormatted: formatDuration(durationSeconds),
       audioUrl: item.preview || undefined, // MP3 oficial de estúdio

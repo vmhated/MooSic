@@ -6,22 +6,23 @@ import { PLAYLIST_THEMES } from '@/constants/playlistThemes';
 import { playlistDnaService } from '@/services/playlist/playlistDnaService';
 import { PlaylistDNABar } from '@/components/playlist/PlaylistDNABar';
 import { formatSecondsToTime } from '@/providers/lyrics/lrclibLyricsProvider';
+import { TrackRow } from '@/components/music/TrackRow';
+import { PlayButton } from '@/components/ui/PlayButton';
+import { EmptyState } from '@/components/ui/EmptyState';
 import {
-  Play,
   Shuffle,
   Trash2,
-  Heart,
   ArrowLeft,
-  Compass,
   Clock,
   Sparkles,
   Flame,
   Radio,
   Zap,
+  Compass,
   Disc,
 } from 'lucide-react';
 
-const ICON_MAP = {
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Flame,
   Radio,
   Zap,
@@ -43,15 +44,13 @@ export const PlaylistView: React.FC<PlaylistViewProps> = ({ playlistId }) => {
 
   if (!playlist) {
     return (
-      <div className="py-24 text-center space-y-4 select-none">
-        <h2 className="text-2xl font-black text-white">Playlist não encontrada</h2>
-        <p className="text-xs text-text-muted">Esta coleção pode ter sido removida ou não existe mais.</p>
-        <button
-          onClick={() => navigate('/app')}
-          className="px-6 py-2.5 rounded-full bg-white text-black font-bold text-xs hover:scale-105 transition-all shadow-lg"
-        >
-          Voltar para o Início
-        </button>
+      <div className="py-24 text-center space-y-4 select-none max-w-md mx-auto">
+        <EmptyState
+          title="Playlist não encontrada"
+          description="Esta coleção pode ter sido removida ou não existe mais no seu acervo."
+          actionLabel="Voltar para o Início"
+          onAction={() => navigate('/app')}
+        />
       </div>
     );
   }
@@ -90,78 +89,108 @@ export const PlaylistView: React.FC<PlaylistViewProps> = ({ playlistId }) => {
     }
   };
 
+  const handlePlayIndex = (index: number) => {
+    setQueue(playlist.tracks, index, {
+      type: 'playlist',
+      id: playlist.id,
+      title: playlist.title,
+      position: index,
+    });
+  };
+
   const handleDelete = () => {
     if (window.confirm(`Deseja realmente excluir a playlist "${playlist.title}"?`)) {
       deletePlaylist(playlist.id);
-      navigate('/app');
+      navigate('/app/library');
     }
   };
 
+  const isPlaylistCurrent = playlist.tracks.some((t) => t.id === currentTrack?.id);
+
   return (
-    <div className="space-y-8 select-none max-w-6xl pb-16">
-      {/* Botão de Retorno */}
+    <div className="space-y-8 select-none w-full max-w-[1720px] mx-auto pb-32">
+      {/* Botão Voltar */}
       <button
-        onClick={() => navigate('/app')}
-        className="flex items-center gap-2 text-xs font-bold text-text-muted hover:text-white transition-colors group"
+        onClick={() => window.history.back()}
+        className="flex items-center gap-2 text-xs font-bold text-text-muted hover:text-white transition-colors"
       >
-        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        <ArrowLeft className="w-4 h-4" />
         <span>Voltar</span>
       </button>
 
-      {/* Hero Header da Playlist */}
+      {/* 1. Hero Editorial da Playlist */}
       <div
-        className={`p-6 sm:p-8 rounded-3xl bg-gradient-to-r ${theme.gradient} border border-white/20 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-end gap-6`}
-        style={{
-          boxShadow: `0 20px 50px -10px ${theme.bgGlow}`,
-        }}
+        className={`relative rounded-4xl p-6 sm:p-10 bg-gradient-to-br ${theme.gradient} border border-white/20 shadow-2xl overflow-hidden flex flex-col sm:flex-row items-center sm:items-end gap-6 sm:gap-8`}
       >
-        {/* Capa com Ícone */}
-        <div className="w-32 h-32 sm:w-44 sm:h-44 rounded-2xl bg-black/35 backdrop-blur-md border border-white/20 flex items-center justify-center flex-shrink-0 shadow-inner">
-          <IconComponent className="w-16 h-16 sm:w-20 sm:h-20 text-white drop-shadow-xl" />
+        {/* Capa Principal ou Colagem */}
+        <div className="relative z-10 w-44 h-44 sm:w-56 sm:h-56 rounded-3xl overflow-hidden bg-black/40 border border-white/20 shadow-2xl flex items-center justify-center flex-shrink-0">
+          {playlist.tracks.length > 0 && playlist.tracks[0]?.coverUrl ? (
+            <img
+              src={playlist.tracks[0].coverUrl}
+              alt={playlist.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <IconComponent className="w-16 h-16 text-white/80 stroke-[1.5]" />
+          )}
         </div>
 
-        {/* Metadados e Ações */}
-        <div className="space-y-3 flex-1 min-w-0">
-          <span className="text-[10px] font-black uppercase tracking-widest bg-black/40 text-white/90 px-3 py-1 rounded-full border border-white/15">
-            Playlist Pessoal MooSic
-          </span>
+        {/* Informações da Playlist */}
+        <div className="relative z-10 space-y-3 text-center sm:text-left min-w-0 flex-1">
+          <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+            <span className="text-[10px] font-black uppercase tracking-widest bg-black/40 text-white px-3 py-1 rounded-full border border-white/20 backdrop-blur-md">
+              {theme.name}
+            </span>
+            <span className="text-xs text-white/80 font-mono">
+              Playlist Autoral
+            </span>
+          </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight truncate">
             {playlist.title}
           </h1>
 
-          <p className="text-xs sm:text-sm text-white/80 max-w-2xl leading-relaxed">
-            {playlist.description}
-          </p>
+          {playlist.description && (
+            <p className="text-xs sm:text-sm text-white/85 max-w-xl line-clamp-2 font-medium">
+              {playlist.description}
+            </p>
+          )}
 
-          <p className="text-xs font-semibold text-white/70">
-            {playlist.tracks.length} músicas • {formatSecondsToTime(totalDuration)} no total
-          </p>
+          <div className="flex items-center justify-center sm:justify-start gap-3 text-xs text-white/80 font-medium">
+            <span>{playlist.tracks.length} {playlist.tracks.length === 1 ? 'faixa' : 'faixas'}</span>
+            <span>•</span>
+            <span className="flex items-center gap-1 font-mono">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{formatSecondsToTime(totalDuration)}</span>
+            </span>
+          </div>
 
           {/* Botões de Ação */}
-          <div className="pt-2 flex items-center gap-3 flex-wrap">
-            <button
-              onClick={handlePlayAll}
-              disabled={playlist.tracks.length === 0}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white hover:bg-white/90 text-black font-extrabold text-xs sm:text-sm shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
-            >
-              <Play className="w-4 h-4 fill-current ml-0.5" />
-              <span>Tocar Playlist</span>
-            </button>
+          <div className="pt-2 flex items-center justify-center sm:justify-start gap-3">
+            {playlist.tracks.length > 0 && (
+              <>
+                <button
+                  onClick={handlePlayAll}
+                  className="flex items-center gap-2.5 px-7 py-3 rounded-full bg-white text-black font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl hover:scale-105 active:scale-95 transition-all"
+                >
+                  <PlayButton isPlaying={isPlaylistCurrent && isPlaying} size="sm" variant="white" />
+                  <span>Tocar Tudo</span>
+                </button>
 
-            <button
-              onClick={handleShuffle}
-              disabled={playlist.tracks.length === 0}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/40 hover:bg-black/60 text-white font-bold text-xs border border-white/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
-            >
-              <Shuffle className="w-3.5 h-3.5" />
-              <span>Aleatório</span>
-            </button>
+                <button
+                  onClick={handleShuffle}
+                  className="p-3 rounded-full bg-black/40 hover:bg-black/60 text-white border border-white/20 transition-all hover:scale-105"
+                  title="Ordem Aleatória"
+                >
+                  <Shuffle className="w-4 h-4" />
+                </button>
+              </>
+            )}
 
             <button
               onClick={handleDelete}
-              className="p-2.5 rounded-full bg-black/40 hover:bg-red-500/20 text-white/70 hover:text-red-400 border border-white/20 hover:border-red-500/30 transition-all ml-auto"
-              title="Excluir playlist"
+              className="p-3 rounded-full bg-black/40 hover:bg-rose-500/30 text-white/70 hover:text-rose-400 border border-white/20 transition-all"
+              title="Excluir Playlist"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -169,132 +198,44 @@ export const PlaylistView: React.FC<PlaylistViewProps> = ({ playlistId }) => {
         </div>
       </div>
 
-      {/* Diagnóstico Analítico: Playlist DNA */}
-      <PlaylistDNABar dna={dna} />
+      {/* 2. Diagnóstico Espectral: Playlist DNA */}
+      {dna.isAnalyzed && dna.totalTracks > 0 && (
+        <section className="space-y-3">
+          <PlaylistDNABar dna={dna} />
+        </section>
+      )}
 
-      {/* Tabela de Músicas da Playlist */}
-      <section className="space-y-2">
-        <div className="flex items-center justify-between px-3 py-1 text-xs font-bold uppercase tracking-wider text-text-muted border-b border-white/[0.06]">
-          <div className="flex items-center gap-4">
-            <span className="w-6 text-center">#</span>
-            <span>Título & Artista</span>
-          </div>
-          <div className="flex items-center gap-8">
-            <span className="hidden sm:inline-block">Álbum</span>
-            <Clock className="w-3.5 h-3.5 mr-8" />
-          </div>
+      {/* 3. Tracklist da Playlist */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between text-xs text-text-muted font-mono px-2">
+          <span>FAIXAS NA COLEÇÃO</span>
+          <span>DURAÇÃO</span>
         </div>
 
         {playlist.tracks.length === 0 ? (
-          <div className="py-16 text-center space-y-3 rounded-2xl bg-white/[0.02] border border-white/[0.06] p-6">
-            <p className="text-sm font-semibold text-white">
-              Sua playlist ainda está vazia!
-            </p>
-            <p className="text-xs text-text-muted max-w-sm mx-auto">
-              Adicione faixas facilmente clicando no ícone "+" ao lado de qualquer música na Busca ou no Início.
-            </p>
-            <button
-              onClick={() => navigate('/app/search')}
-              className="flex items-center gap-2 mx-auto px-5 py-2 rounded-xl bg-brand-purple hover:bg-brand-hover text-white text-xs font-bold shadow-lg transition-all"
-            >
-              <Compass className="w-3.5 h-3.5" />
-              <span>Explorar e Adicionar Músicas</span>
-            </button>
-          </div>
+          <EmptyState
+            title="Esta playlist está vazia"
+            description="Explore as estações sonoras ou busque suas faixas favoritas e clique no ícone '+' para adicioná-las aqui."
+            actionLabel="Explorar catálogo"
+            onAction={() => navigate('/app/search')}
+          />
         ) : (
-          playlist.tracks.map((track, idx) => {
-            const isCurrent = currentTrack?.id === track.id;
-            const liked = isLiked(track.id);
-
-            return (
-              <div
-                key={`${track.id}-${idx}`}
-                onClick={() =>
-                  setQueue(playlist.tracks, idx, {
-                    type: 'playlist',
-                    id: playlist.id,
-                    title: playlist.title,
-                    position: idx,
-                  })
-                }
-                className={`group flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer ${
-                  isCurrent
-                    ? 'bg-white/[0.08] border-white/25 shadow-lg'
-                    : 'bg-white/[0.02] hover:bg-white/[0.06] border-transparent hover:border-white/10'
-                }`}
-              >
-                <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                  <span className="w-6 text-center text-xs font-mono font-bold text-text-muted group-hover:hidden">
-                    {isCurrent && isPlaying ? (
-                      <span className="inline-flex gap-0.5 items-end h-3">
-                        <span className="w-0.5 h-full bg-brand-light animate-bounce" />
-                        <span className="w-0.5 h-2 bg-brand-light animate-bounce" style={{ animationDelay: '0.15s' }} />
-                        <span className="w-0.5 h-3 bg-brand-light animate-bounce" style={{ animationDelay: '0.3s' }} />
-                      </span>
-                    ) : (
-                      idx + 1
-                    )}
-                  </span>
-                  <button className="w-6 hidden group-hover:flex items-center justify-center text-white">
-                    <Play className="w-4 h-4 fill-current text-brand-light" />
-                  </button>
-
-                  <img
-                    src={track.coverUrl}
-                    alt={track.title}
-                    className="w-11 h-11 rounded-xl object-cover shadow flex-shrink-0"
-                  />
-
-                  <div className="min-w-0 pr-4">
-                    <p
-                      className={`font-bold text-xs sm:text-sm truncate transition-colors ${
-                        isCurrent ? 'text-brand-light' : 'text-white group-hover:text-brand-light'
-                      }`}
-                    >
-                      {track.title}
-                    </p>
-                    <p className="text-[11px] text-text-muted truncate font-medium">
-                      {track.artistName}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0">
-                  <span className="text-xs text-text-muted hidden md:inline-block max-w-[140px] truncate">
-                    {track.albumTitle || 'Single'}
-                  </span>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleLike(track.id);
-                    }}
-                    className={`p-1.5 rounded-full transition-colors ${
-                      liked ? 'text-pink-500' : 'text-text-muted hover:text-white'
-                    }`}
-                    aria-label="Curtir"
-                  >
-                    <Heart className={`w-4 h-4 ${liked ? 'fill-current' : ''}`} />
-                  </button>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeTrackFromPlaylist(playlist.id, track.id);
-                    }}
-                    className="p-1.5 rounded-full text-text-muted hover:text-red-400 hover:bg-white/5 transition-colors opacity-0 group-hover:opacity-100"
-                    title="Remover da playlist"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-
-                  <span className="text-xs text-text-muted font-mono w-10 text-right">
-                    {formatSecondsToTime(track.durationSeconds || 30)}
-                  </span>
-                </div>
-              </div>
-            );
-          })
+          <div className="space-y-1.5">
+            {playlist.tracks.map((track, idx) => (
+              <TrackRow
+                key={`pl-track-${track.id}-${idx}`}
+                track={track}
+                index={idx}
+                isCurrent={currentTrack?.id === track.id}
+                isPlaying={isPlaying && currentTrack?.id === track.id}
+                isLiked={isLiked(track.id)}
+                onPlay={() => handlePlayIndex(idx)}
+                onToggleLike={() => toggleLike(track.id)}
+                onRemove={() => removeTrackFromPlaylist(playlist.id, track.id)}
+                onArtistClick={() => navigate(`/app/artist/${encodeURIComponent(track.artistName)}`)}
+              />
+            ))}
+          </div>
         )}
       </section>
     </div>

@@ -1,17 +1,17 @@
 import { Track, SearchResults } from '@/types/domain/music';
 
-// Curated high-resolution musical artworks
+// Curated high-resolution musical artworks from authentic albums
 const HIGH_RES_COVERS = [
-  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1445985543470-41fdd6ce388d?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?auto=format&fit=crop&w=1000&q=85',
+  'https://cdn-images.dzcdn.net/images/cover/9ad06bcb9f0bfe52bbd5e6ff464e4ca4/1000x1000-000000-80-0-0.jpg', // Máquina do Tempo
+  'https://cdn-images.dzcdn.net/images/cover/a4d8ede7aecd45c9e4b4858487a02a88/1000x1000-000000-80-0-0.jpg', // 333
+  'https://cdn-images.dzcdn.net/images/cover/f520bf0be2e3cfc476824e75d20a164a/1000x1000-000000-80-0-0.jpg', // After Hours
+  'https://cdn-images.dzcdn.net/images/cover/3bf2d1550ca05efe0f81e74a4c3ab36a/1000x1000-000000-80-0-0.jpg', // Castelos & Ruínas
+  'https://cdn-images.dzcdn.net/images/cover/f8364f090ba04f1b19b381ec0390f3e4/1000x1000-000000-80-0-0.jpg', // Future Nostalgia
+  'https://cdn-images.dzcdn.net/images/cover/55df905d05d2c226a17cc6ff163204dd/1000x1000-000000-80-0-0.jpg', // Ladrão
+  'https://cdn-images.dzcdn.net/images/cover/d9801848020a195308a0b2de9da074ff/1000x1000-000000-80-0-0.jpg', // Rap É Compromisso
+  'https://cdn-images.dzcdn.net/images/cover/e04b68c5a1aa7a29128d05e7ff9e3084/1000x1000-000000-80-0-0.jpg', // Nada Como Um Dia
+  'https://cdn-images.dzcdn.net/images/cover/311bba0fc112d15f72c8b5a65f0456c1/1000x1000-000000-80-0-0.jpg', // Random Access Memories
+  'https://cdn-images.dzcdn.net/images/cover/aa7e6de00b0810f5051aa60b489f58d8/1000x1000-000000-80-0-0.jpg', // Blonde
 ];
 
 const ACCENT_PALETTES = [

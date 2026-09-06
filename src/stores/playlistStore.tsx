@@ -27,7 +27,7 @@ interface PlaylistContextType {
 
 const PlaylistContext = createContext<PlaylistContextType | null>(null);
 
-const STORAGE_KEY = 'moosic_custom_playlists_v1';
+const STORAGE_KEY = 'moosic_custom_playlists_v3';
 
 const DEFAULT_PLAYLISTS: CustomPlaylist[] = [
   {
@@ -45,7 +45,7 @@ const DEFAULT_PLAYLISTS: CustomPlaylist[] = [
         artistId: 'the-weeknd',
         albumTitle: 'Starboy',
         durationSeconds: 230,
-        coverUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
+        coverUrl: 'https://cdn-images.dzcdn.net/images/cover/134778e4c4f19ea71c82408300925a9a/1000x1000-000000-80-0-0.jpg',
         accent: '#D946EF',
         isExplicit: true,
         providerId: 'itunes',
@@ -58,7 +58,7 @@ const DEFAULT_PLAYLISTS: CustomPlaylist[] = [
         artistId: 'daft-punk',
         albumTitle: 'Discovery',
         durationSeconds: 345,
-        coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=800&q=80',
+        coverUrl: 'https://cdn-images.dzcdn.net/images/cover/5718f7c81c27e0b2417e2a4c45224f8a/1000x1000-000000-80-0-0.jpg',
         accent: '#8B5CF6',
         isExplicit: false,
         providerId: 'itunes',
@@ -81,11 +81,24 @@ const DEFAULT_PLAYLISTS: CustomPlaylist[] = [
         artistId: 'matue',
         albumTitle: '333',
         durationSeconds: 264,
-        coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80',
+        coverUrl: 'https://cdn-images.dzcdn.net/images/cover/a4d8ede7aecd45c9e4b4858487a02a88/1000x1000-000000-80-0-0.jpg',
         accent: '#F59E0B',
         isExplicit: true,
         providerId: 'deezer',
         providerTrackId: 'seed-3',
+      },
+      {
+        id: 'seed-4',
+        title: 'Planos',
+        artistName: "BK'",
+        artistId: 'bk',
+        albumTitle: 'Castelos & Ruínas',
+        durationSeconds: 252,
+        coverUrl: 'https://cdn-images.dzcdn.net/images/cover/3bf2d1550ca05efe0f81e74a4c3ab36a/1000x1000-000000-80-0-0.jpg',
+        accent: '#EC4899',
+        isExplicit: true,
+        providerId: 'deezer',
+        providerTrackId: 'seed-4',
       },
     ],
   },

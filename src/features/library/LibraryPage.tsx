@@ -6,32 +6,30 @@ import { useRouter } from '@/app/routes/router';
 import { musicService } from '@/services/music/musicService';
 import { Track } from '@/types/domain/music';
 import { ListeningSession, HistoryItem } from '@/types/domain/session';
-import { formatSecondsToTime } from '@/providers/lyrics/lrclibLyricsProvider';
+import { TrackRow, PlaylistCard } from '@/components/music';
+import { PlayButton } from '@/components/ui/PlayButton';
+import { EmptyState } from '@/components/ui/EmptyState';
 import {
   Heart,
   Play,
-  Compass,
-  Music,
+  Shuffle,
   Plus,
   History,
-  Sparkles,
-  Clock,
+  Activity,
+  ListMusic,
   Trash2,
-  CheckCircle2,
-  FastForward,
-  Layers,
 } from 'lucide-react';
 
-type LibraryTab = 'liked' | 'history' | 'sessions';
+type LibraryTab = 'liked' | 'playlists' | 'history' | 'sessions';
 
 export const LibraryPage: React.FC = () => {
-  const { likedTrackIds, setQueue, currentTrack, isLiked, toggleLike } = usePlayer();
-  const { openAddToPlaylistModal } = usePlaylists();
+  const { likedTrackIds, setQueue, currentTrack, isLiked, toggleLike, isPlaying } = usePlayer();
+  const { playlists, openCreatePlaylistModal } = usePlaylists();
   const { history, recentSessions, clearHistory } = useListeningSession();
   const { navigate } = useRouter();
 
   const [activeTab, setActiveTab] = useState<LibraryTab>('liked');
-  const [tracks, setTracks] = useState<Track[]>([]);
+  const [likedTracks, setLikedTracks] = useState<Track[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -40,7 +38,7 @@ export const LibraryPage: React.FC = () => {
         const featured = await musicService.getFeaturedTracks();
         if (mounted) {
           const liked = featured.filter((t) => likedTrackIds.includes(t.id));
-          setTracks(liked.length > 0 ? liked : featured.slice(0, 4));
+          setLikedTracks(liked.length > 0 ? liked : featured.slice(0, 4));
         }
       } catch {
         // Fallback
@@ -52,27 +50,39 @@ export const LibraryPage: React.FC = () => {
     };
   }, [likedTrackIds]);
 
-  const handlePlayAll = () => {
-    if (tracks.length > 0) {
-      setQueue(tracks, 0, {
+  const handlePlayLikedAll = () => {
+    if (likedTracks.length > 0) {
+      setQueue(likedTracks, 0, {
         type: 'library',
         title: 'Músicas Curtidas',
       });
     }
   };
 
-  const handlePlayIndex = (index: number) => {
-    setQueue(tracks, index, {
+  const handleShuffleLiked = () => {
+    if (likedTracks.length > 0) {
+      const shuffled = [...likedTracks].sort(() => Math.random() - 0.5);
+      setQueue(shuffled, 0, {
+        type: 'library',
+        title: 'Mix: Músicas Curtidas',
+      });
+    }
+  };
+
+  const handlePlayLikedIndex = (index: number) => {
+    setQueue(likedTracks, index, {
       type: 'library',
       title: 'Músicas Curtidas',
       position: index,
     });
   };
 
-  const handlePlayHistoryItem = (item: HistoryItem) => {
-    setQueue([item.track], 0, {
+  const handlePlayHistoryItem = (_item: HistoryItem, idx: number) => {
+    const historyTracks = history.map((h) => h.track);
+    setQueue(historyTracks, idx, {
       type: 'library',
       title: 'Histórico de Escuta',
+      position: idx,
     });
   };
 
@@ -82,7 +92,7 @@ export const LibraryPage: React.FC = () => {
       title: t.title,
       artistId: 'artist-session',
       artistName: t.artist,
-      coverUrl: t.coverUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&h=300&fit=crop',
+      coverUrl: t.coverUrl || 'https://cdn-images.dzcdn.net/images/cover/9ad06bcb9f0bfe52bbd5e6ff464e4ca4/1000x1000-000000-80-0-0.jpg',
       durationSeconds: t.durationSeconds || 30,
       genre: session.story?.dominantVibe || 'Sessão MooSic',
       isExplicit: false,
@@ -98,379 +108,251 @@ export const LibraryPage: React.FC = () => {
     }
   };
 
-  const formatPlayedAt = (timestamp: number) => {
-    const d = new Date(timestamp);
-    const now = new Date();
-    const isToday = d.toDateString() === now.toDateString();
-    const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-    if (isToday) return `Hoje às ${timeStr}`;
-    return `${d.getDate()}/${d.getMonth() + 1} às ${timeStr}`;
-  };
+  const isLikedPlaying = isPlaying && likedTracks.some((t) => t.id === currentTrack?.id);
 
   return (
-    <div className="space-y-8 select-none max-w-6xl">
-      {/* Hero Banner da Biblioteca */}
-      <div className="flex flex-col sm:flex-row sm:items-end gap-6 p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-purple-900/40 via-surface-elevated to-surface border border-white/10 shadow-2xl relative overflow-hidden">
-        <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl bg-gradient-to-br from-pink-500 via-purple-600 to-indigo-700 flex items-center justify-center shadow-[0_10px_30px_rgba(236,72,153,0.3)] flex-shrink-0">
-          {activeTab === 'liked' && <Heart className="w-16 h-16 text-white fill-current animate-pulse" />}
-          {activeTab === 'history' && <History className="w-16 h-16 text-white animate-pulse" />}
-          {activeTab === 'sessions' && <Sparkles className="w-16 h-16 text-white animate-pulse" />}
+    <div className="space-y-8 select-none w-full max-w-[1720px] mx-auto pb-32">
+      {/* 1. Topo Editorial da Biblioteca */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-black uppercase tracking-widest text-brand-light">
+              Acervo Pessoal
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+            Sua Biblioteca Musical
+          </h1>
+          <p className="text-xs sm:text-sm text-text-muted font-medium">
+            Seus favoritos, playlists autorais, histórico e sessões sonoras arquivadas.
+          </p>
         </div>
 
-        <div className="space-y-2 flex-1">
-          <span className="text-[10px] font-black uppercase tracking-wider text-brand-light bg-brand-purple/20 px-2.5 py-0.5 rounded-full border border-brand-purple/30">
-            {activeTab === 'liked' && 'Playlist Pessoal'}
-            {activeTab === 'history' && 'Fluxo Contínuo'}
-            {activeTab === 'sessions' && 'Inteligência de Sessão'}
-          </span>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
-            {activeTab === 'liked' && 'Músicas Curtidas'}
-            {activeTab === 'history' && 'Histórico de Escuta'}
-            {activeTab === 'sessions' && 'Sessões Gravadas'}
-          </h1>
-          <p className="text-xs sm:text-sm text-text-secondary">
-            {activeTab === 'liked' && `${likedTrackIds.length} faixas salvas no seu fluxo sonoro`}
-            {activeTab === 'history' && `${history.length} faixas tocadas recentemente`}
-            {activeTab === 'sessions' && `${recentSessions.length} sessões de escuta identificadas`}
-          </p>
-
-          {activeTab === 'liked' && (
-            <div className="pt-2">
+        {/* Abas de Navegação */}
+        <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#0D0E14] border border-white/10 self-start sm:self-auto overflow-x-auto max-w-full">
+          {[
+            { id: 'liked', label: 'Curtidas', icon: Heart, count: likedTracks.length },
+            { id: 'playlists', label: 'Playlists', icon: ListMusic, count: playlists.length },
+            { id: 'history', label: 'Histórico', icon: History, count: history.length },
+            { id: 'sessions', label: 'Sessões', icon: Activity, count: recentSessions.length },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
               <button
-                onClick={handlePlayAll}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-brand-purple hover:bg-brand-hover text-white font-bold text-xs shadow-lg hover:shadow-brand-purple/30 transition-all hover:scale-105 active:scale-95"
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as LibraryTab)}
+                className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all flex-shrink-0 ${
+                  isActive
+                    ? 'bg-brand-purple text-white shadow-glow'
+                    : 'text-text-muted hover:text-white'
+                }`}
               >
-                <Play className="w-4 h-4 fill-current ml-0.5" />
-                <span>Tocar Tudo</span>
+                <Icon className="w-3.5 h-3.5" />
+                <span>{tab.label}</span>
+                <span className="text-[10px] font-mono opacity-75">({tab.count})</span>
               </button>
-            </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ================= ABA 1: MÚSICAS CURTIDAS ================= */}
+      {activeTab === 'liked' && (
+        <div className="space-y-6">
+          {likedTracks.length === 0 ? (
+            <EmptyState
+              title="Sua biblioteca está em silêncio"
+              description="Você ainda não curtiu nenhuma música. Explore o catálogo e clique no coração para adicionar faixas aqui!"
+              actionLabel="Explorar músicas"
+              onAction={() => navigate('/app/search')}
+            />
+          ) : (
+            <>
+              {/* Hero Banner das Curtidas */}
+              <div className="relative rounded-4xl p-6 sm:p-8 bg-gradient-to-r from-purple-950 via-[#12131C] to-[#0A0B10] border border-white/10 shadow-xl overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-5">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br from-pink-500 via-rose-600 to-purple-700 flex items-center justify-center text-white shadow-2xl flex-shrink-0">
+                    <Heart className="w-10 h-10 fill-current" />
+                  </div>
+                  <div className="space-y-1 text-center sm:text-left">
+                    <h2 className="text-xl sm:text-2xl font-black text-white">Músicas Curtidas</h2>
+                    <p className="text-xs text-text-muted font-medium">
+                      {likedTracks.length} {likedTracks.length === 1 ? 'faixa favoritada' : 'faixas favoritadas'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handlePlayLikedAll}
+                    className="flex items-center gap-2.5 px-6 py-3 rounded-full bg-white hover:bg-neutral-100 text-black font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl hover:scale-105 active:scale-95 transition-all"
+                  >
+                    <PlayButton isPlaying={isLikedPlaying} size="sm" variant="white" />
+                    <span>Tocar Todas</span>
+                  </button>
+
+                  <button
+                    onClick={handleShuffleLiked}
+                    className="p-3 rounded-full bg-white/[0.08] hover:bg-white/[0.14] text-white border border-white/15 transition-all hover:scale-105"
+                    title="Ordem Aleatória"
+                  >
+                    <Shuffle className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Lista de Faixas */}
+              <div className="space-y-1.5">
+                {likedTracks.map((track, idx) => (
+                  <TrackRow
+                    key={`liked-track-${track.id}-${idx}`}
+                    track={track}
+                    index={idx}
+                    isCurrent={currentTrack?.id === track.id}
+                    isPlaying={isPlaying && currentTrack?.id === track.id}
+                    isLiked={isLiked(track.id)}
+                    onPlay={() => handlePlayLikedIndex(idx)}
+                    onToggleLike={() => toggleLike(track.id)}
+                    onArtistClick={() => navigate(`/app/artist/${encodeURIComponent(track.artistName)}`)}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
-      </div>
+      )}
 
-      {/* Seletor de Abas da Biblioteca */}
-      <div className="flex items-center justify-between border-b border-white/10 pb-3">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setActiveTab('liked')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'liked'
-                ? 'bg-brand-purple text-white shadow-md'
-                : 'text-text-muted hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Heart className={`w-3.5 h-3.5 ${activeTab === 'liked' ? 'fill-current' : ''}`} />
-            <span>Curtidas ({likedTrackIds.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('history')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'history'
-                ? 'bg-brand-purple text-white shadow-md'
-                : 'text-text-muted hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <History className="w-3.5 h-3.5" />
-            <span>Histórico ({history.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('sessions')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'sessions'
-                ? 'bg-brand-purple text-white shadow-md'
-                : 'text-text-muted hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Sessões ({recentSessions.length})</span>
-          </button>
-        </div>
-
-        {activeTab === 'history' && history.length > 0 && (
-          <button
-            onClick={clearHistory}
-            className="flex items-center gap-1.5 text-xs text-text-muted hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-white/5"
-            title="Limpar histórico de escuta"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Limpar Histórico</span>
-          </button>
-        )}
-      </div>
-
-      {/* ABA 1: MÚSICAS CURTIDAS */}
-      {activeTab === 'liked' && (
-        <section className="space-y-4">
+      {/* ================= ABA 2: PLAYLISTS AUTORAIS ================= */}
+      {activeTab === 'playlists' && (
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Music className="w-4 h-4 text-brand-purple" />
-              <span>Faixas na sua Biblioteca</span>
+            <h2 className="text-sm font-black uppercase tracking-wider text-text-muted">
+              Suas Coleções ({playlists.length})
             </h2>
             <button
-              onClick={() => navigate('/app/search')}
-              className="text-xs text-brand-light hover:underline flex items-center gap-1"
+              onClick={() => openCreatePlaylistModal()}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-purple hover:bg-brand-hover text-white text-xs font-bold shadow-glow hover:scale-105 active:scale-95 transition-all"
             >
-              <Compass className="w-3.5 h-3.5" />
-              <span>Explorar mais músicas</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>Nova Playlist</span>
             </button>
           </div>
 
-          <div className="space-y-1.5">
-            {tracks.map((track, idx) => {
-              const isCurrent = currentTrack?.id === track.id;
-              const liked = isLiked(track.id);
-
-              return (
-                <div
-                  key={`${track.id}-${idx}`}
-                  onClick={() => handlePlayIndex(idx)}
-                  className={`group flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${
-                    isCurrent
-                      ? 'bg-brand-purple/15 border-brand-purple/30 text-brand-light'
-                      : 'bg-white/[0.02] hover:bg-white/[0.06] border-transparent hover:border-white/10'
-                  }`}
-                >
-                  <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                    <span className="w-5 text-center text-xs font-mono text-text-muted group-hover:hidden">
-                      {idx + 1}
-                    </span>
-                    <button className="w-5 hidden group-hover:flex items-center justify-center text-white">
-                      <Play className="w-3.5 h-3.5 fill-current text-brand-light" />
-                    </button>
-
-                    <img
-                      src={track.coverUrl}
-                      alt={track.title}
-                      className="w-10 h-10 rounded-lg object-cover shadow flex-shrink-0"
-                    />
-
-                    <div className="min-w-0 pr-4">
-                      <p className="font-bold text-xs sm:text-sm text-white truncate group-hover:text-brand-light transition-colors">
-                        {track.title}
-                      </p>
-                      <p className="text-[11px] text-text-muted truncate">{track.artistName}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openAddToPlaylistModal(track);
-                      }}
-                      className="p-1.5 rounded-full text-text-muted hover:text-white hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100"
-                      title="Adicionar à Playlist"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleLike(track.id);
-                      }}
-                      className={`p-1.5 rounded-full transition-colors ${
-                        liked ? 'text-pink-500' : 'text-text-muted hover:text-white'
-                      }`}
-                      aria-label="Curtir"
-                    >
-                      <Heart className={`w-4 h-4 ${liked ? 'fill-current' : ''}`} />
-                    </button>
-
-                    <span className="text-xs text-text-muted font-mono hidden sm:inline-block w-10 text-right">
-                      {formatSecondsToTime(track.durationSeconds || 30)}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+          {playlists.length === 0 ? (
+            <EmptyState
+              title="Nenhuma playlist criada ainda"
+              description="Crie sua primeira playlist autoral, personalize com temas e analise o DNA sonoro em tempo real."
+              actionLabel="Criar primeira playlist"
+              onAction={() => openCreatePlaylistModal()}
+            />
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5">
+              {playlists.map((playlist) => (
+                <PlaylistCard
+                  key={playlist.id}
+                  playlist={playlist}
+                  onClick={() => navigate(`/app/playlist/${playlist.id}`)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
-      {/* ABA 2: HISTÓRICO DE ESCUTA */}
+      {/* ================= ABA 3: HISTÓRICO DE ESCUTA ================= */}
       {activeTab === 'history' && (
-        <section className="space-y-4">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <History className="w-4 h-4 text-brand-purple" />
-              <span>Reproduções Recentes</span>
+            <h2 className="text-sm font-black uppercase tracking-wider text-text-muted">
+              Faixas Reproduzidas Recentemente
             </h2>
-            <span className="text-xs text-text-muted">
-              {history.length} faixas registradas
-            </span>
+            {history.length > 0 && (
+              <button
+                onClick={clearHistory}
+                className="flex items-center gap-1.5 text-xs text-text-muted hover:text-rose-400 transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Limpar histórico</span>
+              </button>
+            )}
           </div>
 
           {history.length === 0 ? (
-            <div className="text-center py-16 px-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
-              <Clock className="w-10 h-10 text-text-muted mx-auto" />
-              <p className="text-sm font-bold text-white">Nenhum histórico registrado ainda</p>
-              <p className="text-xs text-text-secondary max-w-sm mx-auto">
-                Comece a ouvir faixas na Home ou na Busca. Cada momento será registrado cronologicamente aqui.
-              </p>
-            </div>
+            <EmptyState
+              title="Seu histórico está vazio"
+              description="As músicas que você tocar no Web Player aparecerão aqui cronologicamente."
+            />
           ) : (
             <div className="space-y-1.5">
-              {history.map((item) => {
-                const isCurrent = currentTrack?.id === item.track.id;
-                const liked = isLiked(item.track.id);
-
-                return (
-                  <div
-                    key={item.id}
-                    onClick={() => handlePlayHistoryItem(item)}
-                    className={`group flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${
-                      isCurrent
-                        ? 'bg-brand-purple/15 border-brand-purple/30 text-brand-light'
-                        : 'bg-white/[0.02] hover:bg-white/[0.06] border-transparent hover:border-white/10'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                      <button className="w-5 flex items-center justify-center text-text-muted group-hover:text-brand-light">
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                      </button>
-
-                      <div className="min-w-0 pr-4">
-                        <p className="font-bold text-xs sm:text-sm text-white truncate group-hover:text-brand-light transition-colors">
-                          {item.track.title}
-                        </p>
-                        <p className="text-[11px] text-text-muted truncate">{item.track.artistName}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      {/* Contexto de onde veio */}
-                      {item.playbackContext && (
-                        <span className="hidden md:inline-block text-[10px] font-mono uppercase bg-white/5 px-2 py-0.5 rounded text-text-muted border border-white/5">
-                          {item.playbackContext.title || item.playbackContext.type}
-                        </span>
-                      )}
-
-                      {/* Status da reprodução */}
-                      {item.completed && (
-                        <span className="hidden sm:flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>Completa</span>
-                        </span>
-                      )}
-                      {item.skipped && (
-                        <span className="hidden sm:flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
-                          <FastForward className="w-3 h-3" />
-                          <span>Skip ({item.durationPlayedSeconds}s)</span>
-                        </span>
-                      )}
-
-                      {/* Hora da escuta */}
-                      <span className="text-[11px] font-mono text-text-muted">
-                        {formatPlayedAt(item.playedAt)}
-                      </span>
-
-                      {/* Like rápido */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleLike(item.track.id);
-                        }}
-                        className={`p-1.5 rounded-full transition-colors ${
-                          liked ? 'text-pink-500' : 'text-text-muted hover:text-white'
-                        }`}
-                        aria-label="Curtir"
-                      >
-                        <Heart className={`w-3.5 h-3.5 ${liked ? 'fill-current' : ''}`} />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+              {history.map((item, idx) => (
+                <TrackRow
+                  key={`history-row-${item.track.id}-${idx}`}
+                  track={item.track}
+                  index={idx}
+                  isCurrent={currentTrack?.id === item.track.id}
+                  isPlaying={isPlaying && currentTrack?.id === item.track.id}
+                  isLiked={isLiked(item.track.id)}
+                  onPlay={() => handlePlayHistoryItem(item, idx)}
+                  onToggleLike={() => toggleLike(item.track.id)}
+                  onArtistClick={() => navigate(`/app/artist/${encodeURIComponent(item.track.artistName)}`)}
+                />
+              ))}
             </div>
           )}
-        </section>
+        </div>
       )}
 
-      {/* ABA 3: SESSÕES DE ESCUTA */}
+      {/* ================= ABA 4: SESSÕES ANTERIORES ================= */}
       {activeTab === 'sessions' && (
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-brand-purple" />
-              <span>Sessões Narradas pelo MooSic</span>
-            </h2>
-            <span className="text-xs text-text-muted">
-              {recentSessions.length} sessões registradas
-            </span>
-          </div>
+        <div className="space-y-4">
+          <h2 className="text-sm font-black uppercase tracking-wider text-text-muted">
+            Sessões Sonoras Arquivadas
+          </h2>
 
           {recentSessions.length === 0 ? (
-            <div className="text-center py-16 px-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
-              <Sparkles className="w-10 h-10 text-brand-purple mx-auto animate-pulse" />
-              <p className="text-sm font-bold text-white">Nenhuma sessão consolidada ainda</p>
-              <p className="text-xs text-text-secondary max-w-sm mx-auto">
-                O MooSic agrupa suas sequências contínuas de escuta em histórias temporais. Ouça algumas faixas para gerar sua primeira narrativa.
-              </p>
-            </div>
+            <EmptyState
+              title="Nenhuma sessão consolidada"
+              description="O MooSic agrupa suas faixas ouvidas em sessões contínuas com diagnósticos narrativos."
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {recentSessions.map((sess) => {
-                const durationMin = Math.max(1, Math.round(sess.totalDurationSeconds / 60));
+              {recentSessions.map((session) => {
+                const story = session.story;
+                if (!story) return null;
+                const durationMin = Math.max(1, Math.round(session.totalDurationSeconds / 60));
+
                 return (
                   <div
-                    key={sess.id}
-                    className="p-5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-brand-purple/30 transition-all space-y-3 flex flex-col justify-between"
+                    key={`lib-sess-${session.id}`}
+                    className="p-5 sm:p-6 rounded-3xl bg-[#0D0E14] border border-white/[0.08] space-y-3 hover:border-white/15 transition-all shadow-md"
                   >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-brand-light bg-brand-purple/20 px-2 py-0.5 rounded-full border border-brand-purple/30">
-                          {sess.story?.dominantVibe || 'Sessão'}
-                        </span>
-                        <span className="text-[11px] font-mono text-text-muted">
-                          {formatPlayedAt(sess.startedAt)}
-                        </span>
-                      </div>
-
-                      <h3 className="text-base font-bold text-white">
-                        {sess.story?.title || `Sessão com ${sess.trackCount} faixas`}
-                      </h3>
-
-                      <p className="text-xs text-text-secondary line-clamp-2">
-                        {sess.story?.narrative}
-                      </p>
-
-                      {sess.story?.insight && (
-                        <div className="flex items-center gap-1.5 text-[11px] text-brand-light/90 bg-white/[0.02] p-2 rounded-lg border border-white/5">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
-                          <span className="truncate">{sess.story.insight}</span>
-                        </div>
-                      )}
+                    <div className="flex items-center justify-between text-xs text-text-muted font-mono">
+                      <span className="text-brand-light font-bold uppercase">{story.dominantVibe || 'Sessão MooSic'}</span>
+                      <span>{durationMin} min • {session.trackCount} faixas</span>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                      <div className="flex items-center gap-3 text-xs text-text-muted">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          <span>{durationMin} min</span>
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Layers className="w-3 h-3" />
-                          <span>{sess.trackCount} faixas</span>
-                        </span>
-                      </div>
+                    <h3 className="text-base font-bold text-white tracking-tight">
+                      {story.title}
+                    </h3>
 
-                      <button
-                        onClick={() => handlePlaySessionTracks(sess)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-brand-purple text-white text-xs font-bold transition-all hover:scale-105 active:scale-95"
-                      >
-                        <Play className="w-3 h-3 fill-current ml-0.5" />
-                        <span>Reouvir</span>
-                      </button>
-                    </div>
+                    <p className="text-xs text-text-secondary leading-relaxed">
+                      {story.narrative}
+                    </p>
+
+                    <button
+                      onClick={() => handlePlaySessionTracks(session)}
+                      className="mt-2 flex items-center gap-2 px-4 py-2 rounded-full bg-brand-purple hover:bg-brand-hover text-white text-xs font-bold shadow-md transition-all hover:scale-105 active:scale-95"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>Reouvir Esta Sessão</span>
+                    </button>
                   </div>
                 );
               })}
             </div>
           )}
-        </section>
+        </div>
       )}
     </div>
   );

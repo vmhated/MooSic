@@ -9,11 +9,10 @@ import {
   Search,
   Menu,
   Sparkles,
-  ExternalLink,
-  User,
   Waves,
   LogIn,
   LogOut,
+  User,
   Shield,
 } from 'lucide-react';
 
@@ -68,7 +67,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           <button
             onClick={onToggleSidebar}
             className="md:hidden p-2 rounded-xl bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white border border-white/10 transition-colors flex-shrink-0"
-            aria-label="Abrir navegação lateral"
+            aria-label="Abrir menu"
           >
             <Menu className="w-4 h-4" />
           </button>
@@ -78,14 +77,14 @@ export const Topbar: React.FC<TopbarProps> = ({
           <button
             onClick={() => window.history.back()}
             className="p-1.5 rounded-full bg-white/[0.04] hover:bg-white/10 text-text-secondary hover:text-white border border-white/[0.08] transition-colors"
-            aria-label="Voltar página anterior"
+            aria-label="Voltar"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={() => window.history.forward()}
             className="p-1.5 rounded-full bg-white/[0.04] hover:bg-white/10 text-text-secondary hover:text-white border border-white/[0.08] transition-colors"
-            aria-label="Avançar página seguinte"
+            aria-label="Avançar"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -99,22 +98,22 @@ export const Topbar: React.FC<TopbarProps> = ({
             placeholder="O que você quer ouvir no MooSic?"
             value={searchQuery !== undefined ? searchQuery : internalQuery}
             onChange={handleSearchInputChange}
-            className="w-full bg-white/[0.05] hover:bg-white/[0.08] focus:bg-white/[0.12] border border-white/10 focus:border-brand-purple/60 rounded-full pl-9 pr-12 py-1.5 text-xs text-white placeholder-text-muted transition-all outline-none focus:ring-2 focus:ring-brand-purple/25 shadow-inner"
+            className="w-full bg-white/[0.04] hover:bg-white/[0.07] focus:bg-[#0D0E14] border border-white/10 focus:border-brand-purple/60 rounded-full pl-9 pr-12 py-2 text-xs text-white placeholder-text-muted transition-all outline-none focus:ring-2 focus:ring-brand-purple/25 shadow-inner"
           />
           {route !== 'app-search' && (
-            <kbd className="hidden lg:inline-block absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-text-muted bg-white/5 px-1.5 py-0.5 rounded border border-white/10">
+            <kbd className="hidden lg:inline-block absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-text-muted bg-white/5 px-1.5 py-0.5 rounded border border-white/10 font-mono">
               Ctrl K
             </kbd>
           )}
         </form>
       </div>
 
-      {/* Direita: Ações Inovadoras & Perfil */}
+      {/* Direita: Ações & Perfil */}
       <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
-        {/* BOTÃO DO MOOSIC RESONATOR (Frequências Binaurais) */}
+        {/* BOTÃO DO MOOSIC RESONATOR */}
         <button
           onClick={openResonatorModal}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold transition-all shadow-md ${
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold transition-all shadow-sm ${
             resonatorState.isRunning
               ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/30'
               : 'bg-white/[0.04] hover:bg-white/[0.08] text-white/90 border-white/10'
@@ -138,69 +137,59 @@ export const Topbar: React.FC<TopbarProps> = ({
           />
         </button>
 
-        {/* Atalho para Sobre o MooSic / Landing */}
+        {/* Atalho para Sobre o MooSic */}
         <button
           onClick={() => navigate('/')}
           className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-text-secondary hover:text-white transition-all group"
         >
           <Sparkles className="w-3.5 h-3.5 text-brand-purple group-hover:rotate-12 transition-transform" />
           <span>Sobre o MooSic</span>
-          <ExternalLink className="w-3 h-3 text-text-muted" />
         </button>
 
-        {/* Avatar e Status do Usuário ou Botão Entrar */}
-        {isAuthenticated && user ? (
-          <div className="relative pl-2 border-l border-white/10">
-            <button
-              onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex items-center gap-2.5 p-1 rounded-full hover:bg-white/5 transition-all text-left"
-              aria-label="Abrir menu de usuário"
-            >
-              <div className="relative">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-purple via-fuchsia-500 to-indigo-500 p-[1.5px]">
-                  <div className="w-full h-full rounded-full bg-[#0D0E15] flex items-center justify-center text-white font-extrabold text-xs">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
+        {/* Perfil do Usuário / Autenticação */}
+        <div className="relative">
+          {isAuthenticated && user ? (
+            <div>
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-2 p-1.5 pr-3 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 transition-all text-xs font-bold text-white"
+                aria-label="Menu de perfil"
+              >
+                <div className="w-6 h-6 rounded-full bg-brand-purple text-white flex items-center justify-center text-[10px] font-black uppercase shadow-sm">
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    user.name.charAt(0)
+                  )}
                 </div>
-                <span
-                  className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-background"
-                  title="Online no MooSic Hi-Fi"
-                />
-              </div>
-              <div className="hidden xl:block leading-tight pr-1">
-                <p className="text-xs font-bold text-text-primary truncate max-w-[120px]">
-                  {user.name}
-                </p>
-                <p className="text-[10px] text-brand-light font-mono">Hi-Fi Pro</p>
-              </div>
-            </button>
+                <span className="hidden sm:inline-block truncate max-w-[90px]">{user.name}</span>
+                <span className="hidden lg:inline-block text-[9px] bg-brand-purple/20 text-brand-light px-1.5 py-0.5 rounded border border-brand-purple/30">
+                  {user.membershipTier === 'audiophile' ? 'Hi-Fi' : 'Free'}
+                </span>
+              </button>
 
-            {/* Dropdown Menu do Usuário */}
-            {userMenuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setUserMenuOpen(false)}
-                />
-                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#0D0E17]/95 backdrop-blur-2xl border border-white/15 p-2 shadow-2xl z-50 animate-fade-in space-y-1">
-                  <div className="px-3 py-2 border-b border-white/5 space-y-0.5">
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#0D0E14] border border-white/15 p-2 shadow-2xl z-50 space-y-1">
+                  <div className="p-2.5 border-b border-white/10">
                     <p className="text-xs font-bold text-white truncate">{user.name}</p>
-                    <p className="text-[11px] text-text-muted truncate font-mono">{user.email}</p>
-                    <div className="pt-1 flex items-center gap-1.5 text-[10px] text-emerald-400 font-semibold">
-                      <Shield className="w-3 h-3" />
-                      <span>Assinatura Audiophile Ativa</span>
+                    <p className="text-[11px] text-text-muted truncate">{user.email}</p>
+                    <div className="mt-1.5 flex items-center gap-1.5">
+                      <Shield className="w-3 h-3 text-brand-light" />
+                      <span className="text-[10px] text-brand-light font-mono uppercase">
+                        {user.membershipTier === 'audiophile' ? 'Ouvinte Hi-Fi Master' : 'Ouvinte Padrão'}
+                      </span>
                     </div>
                   </div>
 
                   <button
                     onClick={() => {
                       setUserMenuOpen(false);
-                      openAuthModal('login');
+                      navigate('/app/stats');
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-text-secondary hover:text-white hover:bg-white/5 transition-colors text-left"
+                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-text-secondary hover:text-white hover:bg-white/5 transition-colors flex items-center gap-2"
                   >
-                    <User className="w-3.5 h-3.5 text-brand-light" />
-                    <span>Trocar de Conta</span>
+                    <User className="w-3.5 h-3.5 text-text-muted" />
+                    <span>Cartografia Sonora</span>
                   </button>
 
                   <button
@@ -208,24 +197,24 @@ export const Topbar: React.FC<TopbarProps> = ({
                       setUserMenuOpen(false);
                       logout();
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors text-left"
+                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors flex items-center gap-2"
                   >
                     <LogOut className="w-3.5 h-3.5" />
-                    <span>Sair da Conta</span>
+                    <span>Encerrar Sessão</span>
                   </button>
                 </div>
-              </>
-            )}
-          </div>
-        ) : (
-          <button
-            onClick={() => openAuthModal('login')}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-brand-purple to-purple-600 hover:from-brand-hover hover:to-indigo-500 text-white font-extrabold text-xs shadow-lg shadow-brand-purple/20 transition-all hover:scale-105 active:scale-95 ml-2"
-          >
-            <LogIn className="w-3.5 h-3.5" />
-            <span>Entrar</span>
-          </button>
-        )}
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => openAuthModal('login')}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-purple hover:bg-brand-hover text-white text-xs font-bold shadow-glow hover:scale-105 active:scale-95 transition-all"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Entrar</span>
+            </button>
+          )}
+        </div>
       </div>
     </header>
   );

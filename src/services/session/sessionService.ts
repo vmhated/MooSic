@@ -190,7 +190,7 @@ class SessionService {
         title: event.trackTitle || 'Faixa sem título',
         artistId: event.artistId || 'artist-unknown',
         artistName: event.artistName || 'Artista desconhecido',
-        coverUrl: event.trackCoverUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&h=300&fit=crop',
+        coverUrl: event.trackCoverUrl || 'https://cdn-images.dzcdn.net/images/cover/9ad06bcb9f0bfe52bbd5e6ff464e4ca4/1000x1000-000000-80-0-0.jpg',
         durationSeconds: event.totalDurationSeconds || 30,
         genre: event.playbackContext?.title || 'Geral',
         isExplicit: false,

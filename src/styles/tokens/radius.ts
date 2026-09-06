@@ -1,9 +1,15 @@
+/**
+ * MooSic Design System: Radius Tokens
+ */
+
 export const radius = {
-  none: '0px',
-  sm: '0.25rem',  // 4px
-  md: '0.5rem',   // 8px
-  lg: '0.75rem',  // 12px
-  xl: '1rem',     // 16px
-  '2xl': '1.5rem',// 24px
+  none: '0',
+  xs: '4px',
+  sm: '8px',
+  md: '12px',
+  lg: '16px',
+  xl: '20px',
+  '2xl': '24px',
+  '3xl': '32px',
   full: '9999px',
 };

@@ -58,7 +58,7 @@ export class ITunesAdapter {
       artistName,
       albumId: String(item.collectionId || `itunes-album-${hash}`),
       albumTitle,
-      coverUrl: coverUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1000&q=85',
+      coverUrl: coverUrl || 'https://cdn-images.dzcdn.net/images/cover/9ad06bcb9f0bfe52bbd5e6ff464e4ca4/1000x1000-000000-80-0-0.jpg',
       durationSeconds,
       durationFormatted: formatDuration(item.trackTimeMillis),
       audioUrl: item.previewUrl || undefined,

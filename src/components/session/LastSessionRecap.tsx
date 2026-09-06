@@ -24,7 +24,7 @@ export const LastSessionRecap: React.FC<LastSessionRecapProps> = ({ session }) =
       title: t.title,
       artistId: 'artist-session',
       artistName: t.artist,
-      coverUrl: t.coverUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&h=300&fit=crop',
+      coverUrl: t.coverUrl || 'https://cdn-images.dzcdn.net/images/cover/9ad06bcb9f0bfe52bbd5e6ff464e4ca4/1000x1000-000000-80-0-0.jpg',
       durationSeconds: t.durationSeconds || 30,
       genre: story.dominantVibe || 'Sessão MooSic',
       isExplicit: false,

@@ -22,7 +22,7 @@ export const MOCK_HERO_TRACKS: MockTrack[] = [
     title: 'Vida Loka (Pt. 1)',
     artist: "Racionais MC's",
     album: 'Nada como um Dia após o Outro Dia',
-    artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/3f/ca/fd/3fcafdad-07c1-c752-7878-39dfd32b3b28/0.jpg/600x600bb.jpg',
+    artwork: 'https://cdn-images.dzcdn.net/images/cover/e04b68c5a1aa7a29128d05e7ff9e3084/1000x1000-000000-80-0-0.jpg',
     accent: '#8B5CF6', // MooSic Purple
     accentRgb: '139, 92, 246',
     duration: '5:03',
@@ -40,7 +40,7 @@ export const MOCK_HERO_TRACKS: MockTrack[] = [
     title: 'Um Bom Lugar',
     artist: 'Sabotage',
     album: 'Rap É Compromisso',
-    artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/bb/ea/09/bbea09b3-1cae-5bd6-39c1-13046493ceca/702730616994_cover.jpg/600x600bb.jpg',
+    artwork: 'https://cdn-images.dzcdn.net/images/cover/d9801848020a195308a0b2de9da074ff/1000x1000-000000-80-0-0.jpg',
     accent: '#3B82F6', // Electric Blue
     accentRgb: '59, 130, 246',
     duration: '5:05',
@@ -58,7 +58,7 @@ export const MOCK_HERO_TRACKS: MockTrack[] = [
     title: 'Planos',
     artist: "BK'",
     album: 'Castelos & Ruínas',
-    artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/5c/a5/92/5ca592ca-ed9b-441a-a9d7-3a8930a8dff4/689407286431.jpg/600x600bb.jpg',
+    artwork: 'https://cdn-images.dzcdn.net/images/cover/3bf2d1550ca05efe0f81e74a4c3ab36a/1000x1000-000000-80-0-0.jpg',
     accent: '#EC4899', // Vivid Magenta
     accentRgb: '236, 72, 153',
     duration: '4:12',
@@ -75,8 +75,8 @@ export const MOCK_HERO_TRACKS: MockTrack[] = [
     id: 'matue-333',
     title: 'Máquina do Tempo',
     artist: 'Matuê',
-    album: '333 / Máquina do Tempo',
-    artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/9c/ac/95/9cac9567-6ffa-e640-d619-46564733b11f/196874248850.jpg/600x600bb.jpg',
+    album: 'Máquina do Tempo',
+    artwork: 'https://cdn-images.dzcdn.net/images/cover/9ad06bcb9f0bfe52bbd5e6ff464e4ca4/1000x1000-000000-80-0-0.jpg',
     accent: '#F59E0B', // Amber
     accentRgb: '245, 158, 11',
     duration: '3:30',
@@ -94,7 +94,7 @@ export const MOCK_HERO_TRACKS: MockTrack[] = [
     title: 'Não Existe Amor em SP',
     artist: 'Criolo',
     album: 'Nó na Orelha',
-    artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/d2/88/93/d2889362-b21e-5312-3a3a-7c3b0b1de635/8445162082815_Cover.jpg/600x600bb.jpg',
+    artwork: 'https://cdn-images.dzcdn.net/images/cover/756d8d0262d22eb39099448293dfe323/1000x1000-000000-80-0-0.jpg',
     accent: '#10B981', // Emerald Mint
     accentRgb: '16, 185, 129',
     duration: '4:40',
@@ -112,7 +112,7 @@ export const MOCK_HERO_TRACKS: MockTrack[] = [
     title: 'Instant Crush',
     artist: 'Daft Punk feat. Julian Casablancas',
     album: 'Random Access Memories',
-    artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/e8/43/5f/e8435ffa-b6b9-b171-40ab-4ff3959ab661/886443919266.jpg/600x600bb.jpg',
+    artwork: 'https://cdn-images.dzcdn.net/images/cover/311bba0fc112d15f72c8b5a65f0456c1/1000x1000-000000-80-0-0.jpg',
     accent: '#A855F7', // Deep Violet
     accentRgb: '168, 85, 247',
     duration: '5:37',

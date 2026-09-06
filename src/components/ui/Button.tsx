@@ -1,11 +1,12 @@
 import React from 'react';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'glass' | 'secondary' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'glass';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  isLoading?: boolean;
 }
 
 export function Button({
@@ -14,31 +15,32 @@ export function Button({
   fullWidth = false,
   leftIcon,
   rightIcon,
+  isLoading = false,
   children,
   className = '',
   disabled,
   ...props
 }: ButtonProps) {
   const baseClasses =
-    'relative inline-flex items-center justify-center font-sans font-bold rounded-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-purple/50 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none select-none overflow-hidden';
+    'relative inline-flex items-center justify-center font-sans font-bold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none select-none overflow-hidden';
 
   const variants = {
     primary:
-      'bg-gradient-to-r from-brand-purple via-violet-600 to-indigo-600 hover:from-brand-hover hover:to-indigo-500 text-white shadow-[0_0_30px_rgba(139,92,246,0.45)] border border-white/25 hover:border-white/50 backdrop-blur-xl group',
-    glass:
-      'bg-white/[0.08] hover:bg-white/[0.18] backdrop-blur-2xl text-white border border-white/15 hover:border-brand-purple/60 shadow-[0_8px_32px_rgba(0,0,0,0.4)] group',
+      'bg-brand-purple hover:bg-brand-hover text-white shadow-md hover:shadow-glow border border-brand-light/30',
     secondary:
-      'bg-surface-elevated/80 hover:bg-surface-elevated backdrop-blur-xl text-text-primary border border-surface-border hover:border-brand-purple/40',
+      'bg-white text-black hover:bg-neutral-100 shadow-md font-extrabold',
     outline:
-      'bg-surface/30 hover:bg-surface-elevated/80 backdrop-blur-xl border border-white/10 hover:border-brand-purple/60 text-white shadow-sm',
+      'bg-white/[0.04] hover:bg-white/[0.08] text-text-primary border border-surface-border hover:border-white/20',
     ghost:
-      'bg-transparent text-text-secondary hover:text-white hover:bg-white/5 backdrop-blur-sm',
+      'bg-transparent text-text-muted hover:text-white hover:bg-white/[0.05]',
+    glass:
+      'bg-surface-elevated/70 hover:bg-surface-elevated/90 backdrop-blur-xl text-white border border-surface-border shadow-card',
   };
 
   const sizes = {
-    sm: 'text-xs px-3.5 py-2 gap-1.5 rounded-xl',
-    md: 'text-sm px-5 py-3 gap-2 rounded-2xl',
-    lg: 'text-base px-7 py-4 gap-2.5 rounded-2xl',
+    sm: 'text-xs px-3.5 py-1.5 gap-1.5 rounded-xl min-h-[36px]',
+    md: 'text-xs sm:text-sm px-5 py-2.5 gap-2 rounded-2xl min-h-[44px]',
+    lg: 'text-sm sm:text-base px-6 py-3.5 gap-2.5 rounded-2xl min-h-[48px]',
   };
 
   const widthClass = fullWidth ? 'w-full' : '';
@@ -46,15 +48,18 @@ export function Button({
   return (
     <button
       className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${widthClass} ${className}`}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       {...props}
     >
-      {/* Subtle Shimmer Glass Reflection on Hover */}
-      <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
-
-      {leftIcon && <span className="shrink-0 z-10">{leftIcon}</span>}
-      {children && <span className="z-10">{children}</span>}
-      {rightIcon && <span className="shrink-0 z-10">{rightIcon}</span>}
+      {isLoading ? (
+        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+      ) : (
+        <>
+          {leftIcon && <span className="shrink-0">{leftIcon}</span>}
+          {children && <span>{children}</span>}
+          {rightIcon && <span className="shrink-0">{rightIcon}</span>}
+        </>
+      )}
     </button>
   );
 }

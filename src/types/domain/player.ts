@@ -1,4 +1,5 @@
 import { Track } from './music';
+import { FlowTrack } from './flow';
 
 export type RepeatMode = 'off' | 'all' | 'one';
 
@@ -38,10 +39,17 @@ export interface PlayerState {
   queueIndex: number;
   context: PlaybackContext | null;
   errorMessage: string | null;
+
+  // MooSic Flow & Estrutura de Fila
+  manualQueue: Track[];
+  flowQueue: FlowTrack[];
+  queueHistory: Track[];
+  flowSeed: Track | null;
+  isFlowGenerating: boolean;
 }
 
 export interface PlayerActions {
-  play: (track?: Track) => Promise<void>;
+  play: (track?: Track, context?: PlaybackContext) => Promise<void>;
   pause: () => void;
   resume: () => void;
   next: () => void;
@@ -51,7 +59,14 @@ export interface PlayerActions {
   toggleMute: () => void;
   toggleShuffle: () => void;
   setRepeatMode: (mode: RepeatMode) => void;
+  
+  // Ações de Fila Manual & Flow
+  playNext: (track: Track) => void;
   addToQueue: (track: Track) => void;
-  removeFromQueue: (index: number) => void;
+  removeFromQueue: (index: number, queueType?: 'manual' | 'flow') => void;
+  reorderManualQueue: (sourceIndex: number, targetIndex: number) => void;
+  promoteFlowToManual: (flowIndex: number) => void;
+  clearManualQueue: () => void;
+  regenerateFlow: () => Promise<void>;
   clearQueue: () => void;
 }

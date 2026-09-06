@@ -6,32 +6,57 @@
   :root {
     --dynamic-vibrant: #8B5CF6;
     --dynamic-muted: #4C1D95;
+    --dynamic-accent: #A78BFA;
     --dynamic-dark-vibrant: #1E1B4B;
     --dynamic-light-vibrant: #DDD6FE;
-    --dynamic-bg-start: #09090B;
-    --dynamic-bg-end: #111116;
+    --dynamic-bg-start: #07080B;
+    --dynamic-bg-end: #0D0E14;
+    --dynamic-bg: #07080B;
   }
 
   body {
     @apply bg-background text-text-primary font-sans antialiased overflow-x-hidden selection:bg-brand-purple selection:text-white;
+    background-color: #07080B;
+    color: #FFFFFF;
   }
 }
 
-/* Custom scrollbars para desktop e web */
+/* Custom scrollbars para desktop e web refinadas */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #09090B;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #292930;
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3F3F4A;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* Utilitário para ocultar scrollbars mantendo funcionalidade */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Suporte de Acessibilidade a Movimento Reduzido */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

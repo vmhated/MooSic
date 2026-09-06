@@ -1,2 +1,1 @@
-// Feature: Páginas e Informações de Artistas
-export {};
+export * from './ArtistView';

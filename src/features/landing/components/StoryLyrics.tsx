@@ -85,7 +85,7 @@ export const StoryLyrics: React.FC<StoryLyricsProps> = ({ currentTrack }) => {
                   className="w-full h-full object-cover object-center aspect-square"
                   onError={(e) => {
                     e.currentTarget.src =
-                      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80';
+                      'https://cdn-images.dzcdn.net/images/cover/9ad06bcb9f0bfe52bbd5e6ff464e4ca4/1000x1000-000000-80-0-0.jpg';
                   }}
                 />
               </div>

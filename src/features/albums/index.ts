@@ -1,2 +1,1 @@
-// Feature: Páginas e Detalhes de Álbuns
-export {};
+export * from './AlbumView';

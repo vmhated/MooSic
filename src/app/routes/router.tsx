@@ -1,6 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-export type AppRoute = 'landing' | 'app-home' | 'app-search' | 'app-library' | 'app-playlist';
+export type AppRoute =
+  | 'landing'
+  | 'app-home'
+  | 'app-search'
+  | 'app-library'
+  | 'app-playlist'
+  | 'app-stats'
+  | 'app-artist'
+  | 'app-album';
 
 interface RouterContextType {
   route: AppRoute;
@@ -13,7 +21,6 @@ interface RouterContextType {
 const RouterContext = createContext<RouterContextType | null>(null);
 
 function parseRouteFromLocation(): { route: AppRoute; path: string; params: Record<string, string> } {
-  // Dá suporte tanto a hash quanto a pathname direto
   const hash = window.location.hash.replace(/^#/, '');
   const path = hash ? hash : window.location.pathname;
 
@@ -21,6 +28,19 @@ function parseRouteFromLocation(): { route: AppRoute; path: string; params: Reco
     const parts = path.split('/app/playlist/');
     const id = parts[1] || '';
     return { route: 'app-playlist', path, params: { id } };
+  }
+  if (path.startsWith('/app/artist/') || path.startsWith('app/artist/')) {
+    const parts = path.split('/app/artist/');
+    const id = parts[1] || '';
+    return { route: 'app-artist', path, params: { id } };
+  }
+  if (path.startsWith('/app/album/') || path.startsWith('app/album/')) {
+    const parts = path.split('/app/album/');
+    const id = parts[1] || '';
+    return { route: 'app-album', path, params: { id } };
+  }
+  if (path.startsWith('/app/stats') || path.startsWith('app/stats')) {
+    return { route: 'app-stats', path: '/app/stats', params: {} };
   }
   if (path.startsWith('/app/search') || path.startsWith('app/search')) {
     return { route: 'app-search', path: '/app/search', params: {} };
@@ -53,7 +73,6 @@ export const RouterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   const navigate = useCallback((to: string) => {
-    // Normaliza
     const cleanPath = to.startsWith('/') ? to : `/${to}`;
     window.location.hash = cleanPath;
     window.scrollTo({ top: 0, behavior: 'smooth' });

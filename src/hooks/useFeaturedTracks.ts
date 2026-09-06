@@ -25,7 +25,7 @@ export function useFeaturedTracks(): UseFeaturedTracksReturn {
         artistName: "Racionais MC's",
         albumId: 'album-nada-como-um-dia',
         albumTitle: 'Nada como um Dia após o Outro Dia',
-        coverUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/3f/ca/fd/3fcafdad-07c1-c752-7878-39dfd32b3b28/0.jpg/600x600bb.jpg',
+        coverUrl: 'https://cdn-images.dzcdn.net/images/cover/e04b68c5a1aa7a29128d05e7ff9e3084/1000x1000-000000-80-0-0.jpg',
         durationSeconds: 303,
         durationFormatted: '5:03',
         genre: 'Rap Nacional / Hip-Hop',
