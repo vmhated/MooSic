@@ -29,7 +29,7 @@ export const Topbar: React.FC<TopbarProps> = ({
 }) => {
   const { route, navigate } = useRouter();
   const { openResonatorModal } = usePlaylists();
-  const { user, isAuthenticated, openAuthModal, logout } = useAuth();
+  const { user, isAuthenticated, openAuthModal, signOut } = useAuth();
   const [internalQuery, setInternalQuery] = useState(searchQuery || '');
   const [resonatorState, setResonatorState] = useState(binauralResonator.getState());
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -156,27 +156,27 @@ export const Topbar: React.FC<TopbarProps> = ({
                 aria-label="Menu de perfil"
               >
                 <div className="w-6 h-6 rounded-full bg-brand-purple text-white flex items-center justify-center text-[10px] font-black uppercase shadow-sm">
-                  {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                  {user.avatar_url ? (
+                    <img src={user.avatar_url} alt={user.display_name || user.username} className="w-full h-full rounded-full object-cover" />
                   ) : (
-                    user.name.charAt(0)
+                    (user.display_name || user.username || 'U').charAt(0)
                   )}
                 </div>
-                <span className="hidden sm:inline-block truncate max-w-[90px]">{user.name}</span>
+                <span className="hidden sm:inline-block truncate max-w-[90px]">{user.display_name || user.username}</span>
                 <span className="hidden lg:inline-block text-[9px] bg-brand-purple/20 text-brand-light px-1.5 py-0.5 rounded border border-brand-purple/30">
-                  {user.membershipTier === 'audiophile' ? 'Hi-Fi' : 'Free'}
+                  Hi-Fi
                 </span>
               </button>
 
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#0D0E14] border border-white/15 p-2 shadow-2xl z-50 space-y-1">
                   <div className="p-2.5 border-b border-white/10">
-                    <p className="text-xs font-bold text-white truncate">{user.name}</p>
+                    <p className="text-xs font-bold text-white truncate">{user.display_name || user.username}</p>
                     <p className="text-[11px] text-text-muted truncate">{user.email}</p>
                     <div className="mt-1.5 flex items-center gap-1.5">
                       <Shield className="w-3 h-3 text-brand-light" />
                       <span className="text-[10px] text-brand-light font-mono uppercase">
-                        {user.membershipTier === 'audiophile' ? 'Ouvinte Hi-Fi Master' : 'Ouvinte Padrão'}
+                        Ouvinte Hi-Fi Master
                       </span>
                     </div>
                   </div>
@@ -195,7 +195,7 @@ export const Topbar: React.FC<TopbarProps> = ({
                   <button
                     onClick={() => {
                       setUserMenuOpen(false);
-                      logout();
+                      signOut();
                     }}
                     className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors flex items-center gap-2"
                   >

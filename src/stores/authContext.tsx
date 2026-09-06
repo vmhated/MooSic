@@ -1,151 +1,214 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { UserProfile } from '@/types/domain/user';
+import { AuthUser } from '@/types/domain/user';
+import { supabase } from '@/lib/supabase';
+import { profileRepository } from '@/repositories/profile/profileRepository';
+import { migrationEngine } from '@/services/migration/migrationEngine';
+import { Session } from '@supabase/supabase-js';
 import { logger } from '@/utils/logger';
 
-const AUTH_STORAGE_KEY = 'moosic_auth_user_v1';
-
 export interface AuthContextType {
-  user: UserProfile | null;
+  user: AuthUser | null;
+  session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isEmailVerified: boolean;
+
   isAuthModalOpen: boolean;
-  authModalMode: 'login' | 'signup';
-  openAuthModal: (mode?: 'login' | 'signup') => void;
+  authModalMode: 'login' | 'signup' | 'reset';
+  openAuthModal: (mode?: 'login' | 'signup' | 'reset') => void;
   closeAuthModal: () => void;
-  login: (email: string, password?: string) => Promise<boolean>;
-  signup: (name: string, email: string, password?: string) => Promise<boolean>;
-  loginAsGuest: () => void;
-  logout: () => void;
+
+  signIn: (email: string, password?: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password?: string, username?: string) => Promise<{ error: Error | null }>;
+  signOut: () => Promise<{ error: Error | null }>;
+  resetPassword: (email: string) => Promise<{ error: Error | null }>;
+  updatePassword: (password: string) => Promise<{ error: Error | null }>;
+  resendVerificationEmail: (email: string) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const DEFAULT_GUEST_USER: UserProfile = {
-  id: 'usr-guest-001',
-  name: 'Ouvinte MooSic',
-  email: 'ouvinte@moosic.app',
-  membershipTier: 'audiophile',
-  themePreference: 'dark',
-  createdAt: Date.now(),
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(() => {
-    if (typeof window === 'undefined') return DEFAULT_GUEST_USER;
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    } catch {
-      // Fallback
-    }
-    return DEFAULT_GUEST_USER;
-  });
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup' | 'reset'>('login');
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && user) {
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-    }
-  }, [user]);
+    let mounted = true;
 
-  const openAuthModal = (mode: 'login' | 'signup' = 'login') => {
+    async function initializeAuth() {
+      try {
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        
+        if (mounted) {
+          setSession(currentSession);
+          if (currentSession?.user) {
+            await fetchAndSetProfile(currentSession.user);
+          } else {
+            setIsLoading(false);
+          }
+        }
+      } catch (err) {
+        logger.error('[Auth] Failed to initialize session', err);
+        if (mounted) setIsLoading(false);
+      }
+    }
+
+    initializeAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      logger.info(`[Auth] State changed: ${event}`);
+      if (mounted) {
+        setSession(currentSession);
+        
+        if (currentSession?.user) {
+           await fetchAndSetProfile(currentSession.user);
+        } else {
+           setUser(null);
+           setIsLoading(false);
+        }
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchAndSetProfile = async (authUser: any) => {
+    try {
+      let profile = await profileRepository.getProfile(authUser.id);
+      
+      // If profile doesn't exist, create it. Supabase Auth doesn't trigger profiles table directly unless via Postgres Trigger.
+      // This is a safe fallback creation in frontend.
+      if (!profile) {
+        const metadataUsername = authUser.user_metadata?.username;
+        const emailPrefix = authUser.email?.split('@')[0] || 'user';
+        const fallbackUsername = metadataUsername || `${emailPrefix}_${Math.floor(Math.random() * 10000)}`;
+        
+        profile = await profileRepository.createProfile({
+          id: authUser.id,
+          username: fallbackUsername,
+          display_name: emailPrefix,
+        });
+      }
+
+      const authUserObj = {
+        ...profile,
+        email: authUser.email,
+      } as AuthUser;
+      
+      setUser(authUserObj);
+      
+      // Assincronamente inicia migração (sem bloquear loading)
+      migrationEngine.runMigration(authUserObj);
+    } catch (err) {
+      logger.error('[Auth] Failed to fetch profile', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const openAuthModal = (mode: 'login' | 'signup' | 'reset' = 'login') => {
     setAuthModalMode(mode);
     setIsAuthModalOpen(true);
   };
 
-  const closeAuthModal = () => {
-    setIsAuthModalOpen(false);
-  };
+  const closeAuthModal = () => setIsAuthModalOpen(false);
 
-  const login = async (email: string): Promise<boolean> => {
+  const signIn = async (email: string, password?: string) => {
     setIsLoading(true);
-    try {
-      // Simulação de autenticação com validação local
-      await new Promise((res) => setTimeout(res, 600));
-
-      const cleanEmail = email.trim();
-      const extractedName = cleanEmail.split('@')[0];
-      const capitalizedName = extractedName.charAt(0).toUpperCase() + extractedName.slice(1);
-
-      const loggedUser: UserProfile = {
-        id: `usr-${Date.now()}`,
-        name: capitalizedName || 'Membro MooSic',
-        email: cleanEmail,
-        membershipTier: 'audiophile',
-        themePreference: 'dark',
-        createdAt: Date.now(),
-      };
-
-      setUser(loggedUser);
-      setIsAuthModalOpen(false);
-      logger.info(`[Auth] Usuário logado: ${loggedUser.name} (${loggedUser.email})`);
-      return true;
-    } catch (err) {
-      logger.error('[Auth] Falha no login:', err);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password: password || '' });
+    if (!error) closeAuthModal();
+    setIsLoading(false);
+    return { error };
   };
 
-  const signup = async (name: string, email: string): Promise<boolean> => {
+  const signUp = async (email: string, password?: string, username?: string) => {
     setIsLoading(true);
-    try {
-      await new Promise((res) => setTimeout(res, 600));
-
-      const newUser: UserProfile = {
-        id: `usr-${Date.now()}`,
-        name: name.trim() || 'Novo Membro',
-        email: email.trim(),
-        membershipTier: 'audiophile',
-        themePreference: 'dark',
-        createdAt: Date.now(),
-      };
-
-      setUser(newUser);
-      setIsAuthModalOpen(false);
-      logger.info(`[Auth] Nova conta criada: ${newUser.name} (${newUser.email})`);
-      return true;
-    } catch (err) {
-      logger.error('[Auth] Falha no cadastro:', err);
-      return false;
-    } finally {
-      setIsLoading(false);
+    
+    if (username) {
+       const exists = await profileRepository.checkUsernameExists(username);
+       if (exists) {
+          setIsLoading(false);
+          return { error: new Error('Username already exists') };
+       }
     }
+
+    const { error } = await supabase.auth.signUp({ 
+      email, 
+      password: password || '',
+      options: {
+        data: { username }
+      }
+    });
+    
+    setIsLoading(false);
+    return { error };
   };
 
-  const loginAsGuest = () => {
-    setUser(DEFAULT_GUEST_USER);
-    setIsAuthModalOpen(false);
+  const signOut = async () => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.signOut();
+    setIsLoading(false);
+    return { error };
   };
 
-  const logout = () => {
-    setUser(null);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-    }
-    logger.info('[Auth] Usuário desconectado');
+  const resetPassword = async (email: string) => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/#/reset-password`,
+    });
+    setIsLoading(false);
+    return { error };
   };
+
+  const updatePassword = async (password: string) => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setIsLoading(false);
+    return { error };
+  };
+
+  const resendVerificationEmail = async (email: string) => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/#/welcome`
+      }
+    });
+    setIsLoading(false);
+    return { error };
+  };
+
+  // session.user.email_confirmed_at checks if email is verified.
+  const isEmailVerified = !!session?.user?.email_confirmed_at || !!session?.user?.phone_confirmed_at;
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        session,
         isAuthenticated: !!user,
         isLoading,
+        isEmailVerified,
         isAuthModalOpen,
         authModalMode,
         openAuthModal,
         closeAuthModal,
-        login,
-        signup,
-        loginAsGuest,
-        logout,
+        signIn,
+        signUp,
+        signOut,
+        resetPassword,
+        updatePassword,
+        resendVerificationEmail,
       }}
     >
       {children}
@@ -155,8 +218,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };

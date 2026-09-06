@@ -8,7 +8,9 @@ export type AppRoute =
   | 'app-playlist'
   | 'app-stats'
   | 'app-artist'
-  | 'app-album';
+  | 'app-album'
+  | 'app-welcome'
+  | 'reset-password';
 
 interface RouterContextType {
   route: AppRoute;
@@ -41,6 +43,12 @@ function parseRouteFromLocation(): { route: AppRoute; path: string; params: Reco
   }
   if (path.startsWith('/app/stats') || path.startsWith('app/stats')) {
     return { route: 'app-stats', path: '/app/stats', params: {} };
+  }
+  if (path.startsWith('/app/welcome') || path.startsWith('app/welcome')) {
+    return { route: 'app-welcome', path: '/app/welcome', params: {} };
+  }
+  if (path.startsWith('/reset-password') || path.startsWith('reset-password')) {
+    return { route: 'reset-password', path: '/reset-password', params: {} };
   }
   if (path.startsWith('/app/search') || path.startsWith('app/search')) {
     return { route: 'app-search', path: '/app/search', params: {} };

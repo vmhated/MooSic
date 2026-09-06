@@ -14,6 +14,7 @@ import { AlbumView } from '@/features/albums';
 import { CreatePlaylistModal } from '@/components/modals/CreatePlaylistModal';
 import { AddToPlaylistModal } from '@/components/modals/AddToPlaylistModal';
 import { ResonatorModal } from '@/components/modals/ResonatorModal';
+import { WelcomePage } from '@/features/auth/WelcomePage';
 
 const AppLayoutInner: React.FC = () => {
   const { route, params } = useRouter();
@@ -26,6 +27,8 @@ const AppLayoutInner: React.FC = () => {
 
   const renderContent = () => {
     switch (route) {
+      case 'app-welcome':
+        return <WelcomePage />;
       case 'app-playlist':
         return <PlaylistView playlistId={params.id || ''} />;
       case 'app-artist':

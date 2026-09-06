@@ -13,4 +13,8 @@ export const env = {
   musicBrainzContactEmail: import.meta.env.VITE_MUSICBRAINZ_CONTACT_EMAIL || '',
   // Formato oficial exigido pelo MusicBrainz: MooSic/<version> ( <contact> )
   musicBrainzUserAgent: `MooSic/${appVersion} (${contactEmail})`,
+  
+  // Supabase
+  supabaseUrl: import.meta.env.VITE_SUPABASE_URL || '',
+  supabaseAnonKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',
 };
