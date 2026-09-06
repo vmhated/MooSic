@@ -14,7 +14,7 @@ import { AlbumView } from '@/features/albums';
 import { CreatePlaylistModal } from '@/components/modals/CreatePlaylistModal';
 import { AddToPlaylistModal } from '@/components/modals/AddToPlaylistModal';
 import { ResonatorModal } from '@/components/modals/ResonatorModal';
-import { WelcomePage } from '@/features/auth/WelcomePage';
+import { WelcomePage } from '@/features/auth';
 
 const AppLayoutInner: React.FC = () => {
   const { route, params } = useRouter();

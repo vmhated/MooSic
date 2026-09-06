@@ -1,2 +1,2 @@
 // Feature: Autenticação
-export {};
+export * from './WelcomePage';
