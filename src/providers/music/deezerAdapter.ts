@@ -1,4 +1,4 @@
-import { Track, SearchResults } from '@/types/domain/music';
+import { Track, SearchResults, Artist } from '@/types/domain/music';
 
 // Harmonious ambient palettes for dynamic atmosphere
 const ACCENT_PALETTES = [
@@ -74,6 +74,19 @@ export class DeezerAdapter {
       isExplicit: Boolean(item.explicit_lyrics),
       providerId: 'deezer',
       providerTrackId: String(item.id || hash),
+    };
+  }
+
+  static toDomainArtist(item: any): Artist {
+    const name = item.name || 'Artista Desconhecido';
+    const picture = item.picture_xl || item.picture_big || item.picture_medium || '';
+    const hash = getStableHash(name);
+
+    return {
+      id: `deezer-${item.id || hash}`,
+      name,
+      avatarUrl: picture,
+      genres: [], // Deezer search/artist doesn't return genres directly in the list
     };
   }
 

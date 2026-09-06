@@ -137,6 +137,20 @@ export class HybridMusicProvider implements IMusicProvider {
     }
   }
 
+  async searchArtists(query: string): Promise<Artist[]> {
+    const itunesRes = await iTunesMusicProvider.searchArtists(query);
+    if (itunesRes.length > 0) return itunesRes;
+    
+    return deezerMusicProvider.searchArtists(query);
+  }
+
+  async searchAlbums(query: string): Promise<Album[]> {
+    const itunesRes = await iTunesMusicProvider.searchAlbums(query);
+    if (itunesRes.length > 0) return itunesRes;
+    
+    return deezerMusicProvider.searchAlbums(query);
+  }
+
   async getFeaturedTracks(): Promise<Track[]> {
     return mockMusicProvider.getFeaturedTracks();
   }

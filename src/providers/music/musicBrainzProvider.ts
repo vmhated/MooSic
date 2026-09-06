@@ -130,6 +130,14 @@ export class MusicBrainzProvider implements IMusicProvider {
     }
   }
 
+  async searchArtists(_query: string): Promise<Artist[]> {
+    return [];
+  }
+
+  async searchAlbums(_query: string): Promise<Album[]> {
+    return [];
+  }
+
   async getFeaturedTracks(): Promise<Track[]> {
     const cacheKey = 'featured-hero-tracks';
     const cached = this.cache.get(cacheKey);

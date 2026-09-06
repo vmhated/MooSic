@@ -114,6 +114,28 @@ export class DeezerMusicProvider implements IMusicProvider {
     }
   }
 
+  async searchArtists(query: string): Promise<Artist[]> {
+    const clean = query.trim();
+    if (!clean) return [];
+
+    try {
+      const url = `https://api.deezer.com/search/artist?q=${encodeURIComponent(clean)}&limit=20`;
+      const data = await this.fetchJsonp<any>(url);
+
+      if (data && data.data && data.data.length > 0) {
+        return data.data.map((item: any) => DeezerAdapter.toDomainArtist(item));
+      }
+
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
+  async searchAlbums(_query: string): Promise<Album[]> {
+    return []; // Optional for now, can implement later
+  }
+
   async getFeaturedTracks(): Promise<Track[]> {
     return mockMusicProvider.getFeaturedTracks();
   }

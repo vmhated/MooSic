@@ -79,6 +79,26 @@ export class MockMusicProvider implements IMusicProvider {
     };
   }
 
+  async searchArtists(query: string): Promise<Artist[]> {
+    const q = query.toLowerCase();
+    const matched = this.tracks
+      .filter((t) => t.artistName.toLowerCase().includes(q))
+      .map((t) => ({
+        id: t.artistId,
+        name: t.artistName,
+        genres: [t.genre || 'Music'],
+      }));
+    
+    // Desduplicar mock artists
+    const unique = new Map<string, Artist>();
+    matched.forEach(a => unique.set(a.id, a));
+    return Array.from(unique.values());
+  }
+
+  async searchAlbums(_query: string): Promise<Album[]> {
+    return [];
+  }
+
   async getFeaturedTracks(): Promise<Track[]> {
     return [...this.tracks];
   }

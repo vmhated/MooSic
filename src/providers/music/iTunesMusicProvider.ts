@@ -85,6 +85,31 @@ export class ITunesMusicProvider implements IMusicProvider {
   /**
    * Faixas em destaque trazendo os clássicos do catálogo curado (Racionais MC's, Sabotage, BK', Djonga, Criolo, Daft Punk)
    */
+  async searchArtists(query: string): Promise<Artist[]> {
+    const clean = query.trim();
+    if (!clean) return [];
+    
+    try {
+      const url = `https://itunes.apple.com/search?term=${encodeURIComponent(clean)}&entity=musicArtist&limit=10`;
+      const data = await this.fetchJson<any>(url);
+      
+      if (data && data.results && data.results.length > 0) {
+        return data.results.map((item: any) => ({
+          id: `itunes-artist-${item.artistId}`,
+          name: item.artistName,
+          genres: [item.primaryGenreName].filter(Boolean),
+        }));
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
+  async searchAlbums(_query: string): Promise<Album[]> {
+    return [];
+  }
+
   async getFeaturedTracks(): Promise<Track[]> {
     // Retorna as faixas com as identidades visuais de alta fidelidade
     return mockMusicProvider.getFeaturedTracks();

@@ -13,5 +13,7 @@ export interface IMusicProvider {
   getAlbum(id: string): Promise<Album | null>;
   getArtist(id: string): Promise<Artist | null>;
   search(query: string): Promise<SearchResults>;
+  searchArtists(query: string): Promise<Artist[]>;
+  searchAlbums(query: string): Promise<Album[]>;
   getFeaturedTracks(): Promise<Track[]>;
 }

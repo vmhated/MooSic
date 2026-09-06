@@ -1,7 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 
 export type MembershipTier = 'free' | 'pro' | 'audiophile';
-export type OnboardingStatus = 'not_started' | 'in_progress' | 'completed';
+export type OnboardingStatus = 'not_started' | 'in_progress' | 'completed' | 'skipped';
 
 export interface Profile {
   id: string;

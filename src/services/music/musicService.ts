@@ -53,6 +53,14 @@ export class MusicService {
     return this.activeProvider.search(query);
   }
 
+  public async searchArtists(query: string): Promise<Artist[]> {
+    return this.activeProvider.searchArtists(query);
+  }
+
+  public async searchAlbums(query: string): Promise<Album[]> {
+    return this.activeProvider.searchAlbums(query);
+  }
+
   public async getFeaturedTracks(): Promise<Track[]> {
     return this.activeProvider.getFeaturedTracks();
   }
