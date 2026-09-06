@@ -11,7 +11,6 @@ import { PlayerPreviewSection } from './components/PlayerPreviewSection';
 import { InfiniteDissolveLoop } from '@/components/common/InfiniteDissolveLoop';
 import { FinalCTASection } from './components/FinalCTASection';
 import { Footer } from './components/Footer';
-import { ApiInspector } from '@/components/common/ApiInspector';
 import { PersistentBottomPlayer } from '@/components/player';
 import { useFeaturedTracks } from '@/hooks/useFeaturedTracks';
 import { Track } from '@/types/domain/music';
@@ -105,12 +104,6 @@ export function LandingPage() {
 
       {/* Product Footer */}
       <Footer />
-
-      {/* Live Deezer Music Engine Inspector */}
-      <ApiInspector
-        activeTrack={currentTrack}
-        onApplyTrack={handleSelectTrack}
-      />
 
       {/* Player Persistente Fixo no Rodapé (se houver música ativa) */}
       {globalTrack && <PersistentBottomPlayer />}

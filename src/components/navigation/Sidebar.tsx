@@ -227,29 +227,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
 
         {/* Rodapé da Sidebar */}
         <div className="space-y-3 pt-4 border-t border-white/[0.08] flex-shrink-0">
-          {/* Card de Informação do Motor de Som */}
+          {/* Card de Qualidade de Áudio */}
           <div className="rounded-xl bg-white/[0.03] border border-white/[0.08] p-3 text-xs space-y-1 shadow-inner">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-brand-light font-semibold">
                 <Disc3 className="w-3.5 h-3.5 animate-spin text-brand-purple" style={{ animationDuration: '6s' }} />
-                <span>MooSic Hi-Fi 96k</span>
+                <span>Áudio Master Hi-Fi</span>
               </div>
-              <span className="text-[9px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                ATIVO
+              <span className="text-[9px] font-mono font-bold text-brand-light bg-brand-purple/20 px-1.5 py-0.5 rounded border border-brand-purple/30">
+                24-bit / 96kHz
               </span>
             </div>
             <p className="text-[10px] text-text-muted leading-tight">
-              Áudio de estúdio com síntese binaural e catálogos federados.
+              Transmissão de estúdio em alta fidelidade e processamento puro.
             </p>
           </div>
 
-          {/* Botão de Retorno à Landing Page */}
+          {/* Botão de Retorno à Página Principal / Conhecer MooSic */}
           <button
             onClick={() => handleNav('/')}
             className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-text-secondary hover:text-white hover:bg-white/[0.06] border border-transparent hover:border-white/10 transition-all group"
           >
             <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-            <span>Voltar à Apresentação</span>
+            <span>Sobre o MooSic</span>
           </button>
         </div>
       </aside>

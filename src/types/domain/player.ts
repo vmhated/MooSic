@@ -4,10 +4,25 @@ export type RepeatMode = 'off' | 'all' | 'one';
 
 export type PlaybackState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 
+export type PlaybackContextType =
+  | 'home'
+  | 'search'
+  | 'playlist'
+  | 'library'
+  | 'album'
+  | 'artist'
+  | 'discovery'
+  | 'recommendation'
+  | 'queue'
+  | 'flow'
+  | 'favorites';
+
 export interface PlaybackContext {
-  id: string;
-  type: 'album' | 'artist' | 'playlist' | 'queue' | 'favorites';
+  type: PlaybackContextType;
+  id?: string;
   title?: string;
+  position?: number;
+  metadata?: Record<string, unknown>;
 }
 
 export interface PlayerState {

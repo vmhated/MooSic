@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { MooLogo } from '@/components/common/MooLogo';
 import { Button } from '@/components/ui/Button';
-import { Menu, X, Play, Sparkles } from 'lucide-react';
+import { useAuth } from '@/stores/authContext';
+import { Menu, X, Play, Sparkles, User } from 'lucide-react';
 
 interface NavbarProps {
   onStartClick?: () => void;
@@ -9,6 +10,7 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onStartClick }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, isAuthenticated, openAuthModal } = useAuth();
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 px-4 sm:px-6 pt-3 sm:pt-4 pointer-events-none select-none">
@@ -52,7 +54,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onStartClick }) => {
         </nav>
 
         {/* Action Button Glassmorphic */}
-        <div className="hidden sm:flex items-center gap-3">
+        <div className="hidden sm:flex items-center gap-2">
+          {isAuthenticated && user ? (
+            <button
+              onClick={() => onStartClick?.()}
+              className="flex items-center gap-2 text-xs font-bold text-white bg-white/10 hover:bg-white/15 px-3 py-2 rounded-full border border-white/10 transition-all"
+            >
+              <User className="w-3.5 h-3.5 text-brand-light" />
+              <span>{user.name}</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => openAuthModal('login')}
+              className="text-xs font-bold text-white/80 hover:text-white px-3.5 py-2 rounded-full hover:bg-white/10 transition-all"
+            >
+              Entrar
+            </button>
+          )}
+
           <Button
             variant="primary"
             size="sm"
@@ -111,6 +130,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onStartClick }) => {
             </a>
           </nav>
           <div className="pt-3 border-t border-surface-border flex flex-col gap-2">
+            {!isAuthenticated && (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openAuthModal('login');
+                }}
+                className="w-full py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-all"
+              >
+                Entrar na Conta
+              </button>
+            )}
             <Button
               variant="primary"
               fullWidth

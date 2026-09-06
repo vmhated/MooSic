@@ -131,7 +131,7 @@ export const GENRE_STATIONS: GenreStation[] = [
 ];
 
 const QUICK_SEARCH_CHIPS = [
-  { name: 'Caio Ocean', query: 'Caio Ocean' },
+  { name: 'Frank Ocean', query: 'Frank Ocean' },
   { name: 'Matuê', query: 'Matue' },
   { name: 'BK\'', query: 'BK' },
   { name: 'The Weeknd', query: 'The Weeknd' },
@@ -234,14 +234,22 @@ export const SearchPage: React.FC<SearchPageProps> = ({
 
   const handlePlayAllGenre = () => {
     if (genreTracks.length > 0) {
-      setQueue(genreTracks, 0);
+      setQueue(genreTracks, 0, {
+        type: 'discovery',
+        id: selectedGenre?.id,
+        title: selectedGenre ? `Estação: ${selectedGenre.title}` : 'Estação de Gênero',
+      });
     }
   };
 
   const handleShuffleGenre = () => {
     if (genreTracks.length > 0) {
       const shuffled = [...genreTracks].sort(() => Math.random() - 0.5);
-      setQueue(shuffled, 0);
+      setQueue(shuffled, 0, {
+        type: 'discovery',
+        id: selectedGenre?.id,
+        title: selectedGenre ? `Mix: ${selectedGenre.title}` : 'Estação de Gênero',
+      });
     }
   };
 
@@ -326,7 +334,13 @@ export const SearchPage: React.FC<SearchPageProps> = ({
               return (
                 <div
                   key={`${track.id}-${idx}`}
-                  onClick={() => setQueue(results, idx)}
+                  onClick={() =>
+                    setQueue(results, idx, {
+                      type: 'search',
+                      title: `Busca: "${query}"`,
+                      position: idx,
+                    })
+                  }
                   className={`group flex items-center justify-between p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer ${
                     isCurrent
                       ? 'bg-brand-purple/15 border-brand-purple/30 text-brand-light'
@@ -549,7 +563,14 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                 return (
                   <div
                     key={`${track.id}-${idx}`}
-                    onClick={() => setQueue(genreTracks, idx)}
+                    onClick={() =>
+                      setQueue(genreTracks, idx, {
+                        type: 'discovery',
+                        id: selectedGenre?.id,
+                        title: selectedGenre ? `Estação: ${selectedGenre.title}` : 'Estação de Gênero',
+                        position: idx,
+                      })
+                    }
                     className={`group flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer ${
                       isCurrent
                         ? 'bg-white/[0.08] border-white/25 shadow-lg'

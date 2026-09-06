@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { usePlaylists } from '@/stores/playlistStore';
 import { usePlayer } from '@/stores/playerContext';
 import { useRouter } from '@/app/routes/router';
 import { PLAYLIST_THEMES } from '@/constants/playlistThemes';
+import { playlistDnaService } from '@/services/playlist/playlistDnaService';
+import { PlaylistDNABar } from '@/components/playlist/PlaylistDNABar';
 import { formatSecondsToTime } from '@/providers/lyrics/lrclibLyricsProvider';
 import {
   Play,
@@ -62,16 +64,29 @@ export const PlaylistView: React.FC<PlaylistViewProps> = ({ playlistId }) => {
     0
   );
 
+  const dna = useMemo(
+    () => playlistDnaService.computePlaylistDNA(playlist.id, playlist.tracks),
+    [playlist.id, playlist.tracks]
+  );
+
   const handlePlayAll = () => {
     if (playlist.tracks.length > 0) {
-      setQueue(playlist.tracks, 0);
+      setQueue(playlist.tracks, 0, {
+        type: 'playlist',
+        id: playlist.id,
+        title: playlist.title,
+      });
     }
   };
 
   const handleShuffle = () => {
     if (playlist.tracks.length > 0) {
       const shuffled = [...playlist.tracks].sort(() => Math.random() - 0.5);
-      setQueue(shuffled, 0);
+      setQueue(shuffled, 0, {
+        type: 'playlist',
+        id: playlist.id,
+        title: `Mix: ${playlist.title}`,
+      });
     }
   };
 
@@ -154,6 +169,9 @@ export const PlaylistView: React.FC<PlaylistViewProps> = ({ playlistId }) => {
         </div>
       </div>
 
+      {/* Diagnóstico Analítico: Playlist DNA */}
+      <PlaylistDNABar dna={dna} />
+
       {/* Tabela de Músicas da Playlist */}
       <section className="space-y-2">
         <div className="flex items-center justify-between px-3 py-1 text-xs font-bold uppercase tracking-wider text-text-muted border-b border-white/[0.06]">
@@ -191,7 +209,14 @@ export const PlaylistView: React.FC<PlaylistViewProps> = ({ playlistId }) => {
             return (
               <div
                 key={`${track.id}-${idx}`}
-                onClick={() => setQueue(playlist.tracks, idx)}
+                onClick={() =>
+                  setQueue(playlist.tracks, idx, {
+                    type: 'playlist',
+                    id: playlist.id,
+                    title: playlist.title,
+                    position: idx,
+                  })
+                }
                 className={`group flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer ${
                   isCurrent
                     ? 'bg-white/[0.08] border-white/25 shadow-lg'

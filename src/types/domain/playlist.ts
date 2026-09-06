@@ -36,3 +36,33 @@ export interface ResonatorPreset {
   color: string;
   bgGlow: string;
 }
+
+export interface AudioMetrics {
+  energy: number; // 0 a 100
+  danceability: number; // 0 a 100
+  atmosphere: number; // 0 a 100
+  acousticness: number; // 0 a 100
+  instrumentalness: number; // 0 a 100
+  valenceMood: number; // 0 a 100
+  tempoBpm: number; // Batimentos por minuto
+  key?: string;
+}
+
+export interface PlaylistDNA {
+  playlistId: string;
+  archetypeTitle: string; // Ex: "Explosão Noturna", "Cadência Urbana"
+  archetypeDescription: string;
+  energy: number; // 0 a 100
+  danceability: number; // 0 a 100
+  atmosphere: number; // 0 a 100
+  moodValence: number; // 0 a 100
+  acousticness: number; // 0 a 100
+  vocalsRatio: number; // 0 a 100
+  tempoAvg: number; // BPM médio
+  artistDiversityRatio: number; // 0.0 a 1.0
+  genreDiversityRatio: number; // 0.0 a 1.0
+  uniqueArtistCount: number;
+  totalTracks: number;
+  isAnalyzed: boolean;
+}
+

@@ -1,15 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { Track } from '@/types/domain/music';
-import { PlaybackState, RepeatMode } from '@/types/domain/player';
+import { PlaybackState, RepeatMode, PlaybackContext } from '@/types/domain/player';
 import { youtubeAudioEngine } from '@/services/audio/youtubeAudioEngine';
 import { audioResolverService } from '@/services/audio/audioResolverService';
+import { playerProgressStore } from '@/stores/playerProgressStore';
+import { listeningEventTracker } from '@/services/session/listeningEventTracker';
+import { logger } from '@/utils/logger';
 
 export interface PlayerContextType {
   currentTrack: Track | null;
   playbackState: PlaybackState;
   isPlaying: boolean;
-  currentTime: number;
-  duration: number;
   volume: number;
   isMuted: boolean;
   isShuffle: boolean;
@@ -17,9 +18,14 @@ export interface PlayerContextType {
   queue: Track[];
   queueIndex: number;
   likedTrackIds: string[];
+  playbackContext: PlaybackContext | null;
+
+  // Propriedades compatíveis com leitura sob demanda (não disparam re-render global por tick)
+  currentTime: number;
+  duration: number;
 
   // Actions
-  play: (track?: Track) => Promise<void>;
+  play: (track?: Track, context?: PlaybackContext) => Promise<void>;
   pause: () => void;
   resume: () => void;
   togglePlay: () => void;
@@ -33,7 +39,8 @@ export interface PlayerContextType {
   toggleLike: (trackId: string) => void;
   isLiked: (trackId: string) => boolean;
   addToQueue: (track: Track) => void;
-  setQueue: (tracks: Track[], startIndex?: number) => void;
+  setQueue: (tracks: Track[], startIndex?: number, context?: PlaybackContext) => void;
+  setPlaybackContext: (context: PlaybackContext | null) => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | null>(null);
@@ -43,8 +50,7 @@ const LIKED_STORAGE_KEY = 'moosic_liked_tracks';
 export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
-  const [currentTime, setCurrentTime] = useState<number>(0);
-  const [duration, setDuration] = useState<number>(30);
+  const [playbackContext, setPlaybackContextState] = useState<PlaybackContext | null>(null);
   const [volume, setVolumeState] = useState<number>(() => {
     const saved = localStorage.getItem('moosic_volume');
     return saved ? Number(saved) : 0.8;
@@ -66,6 +72,21 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const activeEngineRef = useRef<'youtube' | 'html5'>('youtube');
 
+  // Guardião de transação contra Race Condition na troca rápida A -> B -> C
+  const playTransactionRef = useRef<number>(0);
+
+  // Rastreamento para eventos comportamentais
+  const currentTrackRef = useRef<Track | null>(null);
+  const playbackContextRef = useRef<PlaybackContext | null>(null);
+  const queueIndexRef = useRef<number>(-1);
+  const trackPlayStartTimeRef = useRef<number>(0);
+
+  useEffect(() => {
+    currentTrackRef.current = currentTrack;
+    playbackContextRef.current = playbackContext;
+    queueIndexRef.current = queueIndex;
+  }, [currentTrack, playbackContext, queueIndex]);
+
   // Inicializa o fallback HTMLAudioElement
   useEffect(() => {
     const audio = new Audio();
@@ -74,13 +95,13 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const handleTimeUpdate = () => {
       if (activeEngineRef.current === 'html5' && !isNaN(audio.currentTime)) {
-        setCurrentTime(audio.currentTime);
+        playerProgressStore.setProgress(audio.currentTime, audio.duration || 30);
       }
     };
 
     const handleDurationChange = () => {
       if (activeEngineRef.current === 'html5' && audio.duration && isFinite(audio.duration) && audio.duration > 0) {
-        setDuration(audio.duration);
+        playerProgressStore.setProgress(audio.currentTime || 0, audio.duration);
       }
     };
 
@@ -143,20 +164,26 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       onDurationChange: (dur) => {
         if (activeEngineRef.current !== 'youtube') return;
         if (dur > 0 && isFinite(dur)) {
-          setDuration(dur);
+          playerProgressStore.setProgress(playerProgressStore.getSnapshot().currentTime, dur);
         }
       },
       onTimeUpdate: (cur, dur) => {
         if (activeEngineRef.current !== 'youtube') return;
-        if (!isNaN(cur)) {
-          setCurrentTime(cur);
-        }
-        if (dur > 0 && isFinite(dur)) {
-          setDuration(dur);
-        }
+        // Atualiza a store dedicada de progresso (useSyncExternalStore), SEM disparar re-render no PlayerContext!
+        playerProgressStore.setProgress(cur, dur);
       },
       onEnded: () => {
         if (activeEngineRef.current === 'youtube') {
+          // Registra conclusão
+          if (currentTrackRef.current) {
+            listeningEventTracker.recordTrackTransition(
+              currentTrackRef.current,
+              playerProgressStore.getSnapshot().duration,
+              playerProgressStore.getSnapshot().duration,
+              playbackContextRef.current,
+              queueIndexRef.current
+            );
+          }
           nextRef.current();
         }
       },
@@ -172,13 +199,40 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   }, [currentTrack]);
 
-  const play = useCallback(async (track?: Track) => {
+  const play = useCallback(async (track?: Track, context?: PlaybackContext) => {
     const audio = audioRef.current;
 
     if (track) {
+      // 1. Incrementa token de transação contra Race Condition
+      const transactionId = ++playTransactionRef.current;
+
+      // 2. Se havia uma faixa anterior tocando, registra o evento de transição/skip
+      if (currentTrackRef.current && trackPlayStartTimeRef.current > 0) {
+        const elapsed = (Date.now() - trackPlayStartTimeRef.current) / 1000;
+        listeningEventTracker.recordTrackTransition(
+          currentTrackRef.current,
+          elapsed,
+          playerProgressStore.getSnapshot().duration,
+          playbackContextRef.current,
+          queueIndexRef.current
+        );
+      }
+
+      // 3. Atualiza referências para a nova faixa
+      trackPlayStartTimeRef.current = Date.now();
       setCurrentTrack(track);
-      setCurrentTime(0);
+      if (context) {
+        setPlaybackContextState(context);
+      }
       setPlaybackState('loading');
+      playerProgressStore.setProgress(0, track.durationSeconds || 30);
+
+      // 4. Registra início do evento de escuta
+      listeningEventTracker.recordTrackStart(
+        track,
+        context || playbackContextRef.current,
+        queueIndexRef.current
+      );
 
       // Interrompe qualquer áudio em reprodução anterior
       if (audio) {
@@ -189,9 +243,17 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // Resolve a correspondência da música completa no YouTube
       const result = await audioResolverService.resolveTrackAudio(track);
 
+      // CANCELLATION GUARD: Se o usuário clicou em outra faixa enquanto resolvia, descarta esta resposta!
+      if (playTransactionRef.current !== transactionId) {
+        logger.info(
+          `[PlayerContext] Transação assíncrona descartada para "${track.title}" (ID ${transactionId} vs atual ${playTransactionRef.current})`
+        );
+        return;
+      }
+
       if (result.videoId) {
         activeEngineRef.current = 'youtube';
-        setDuration(track.durationSeconds || 180);
+        playerProgressStore.setProgress(0, track.durationSeconds || 180);
         youtubeAudioEngine.setVolume(isMuted ? 0 : volume * 100);
         youtubeAudioEngine.loadVideo(result.videoId, true);
       } else if (track.audioUrl && audio) {
@@ -202,13 +264,13 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         try {
           await audio.play();
           setPlaybackState('playing');
-          setDuration(audio.duration && isFinite(audio.duration) ? audio.duration : 30);
+          playerProgressStore.setProgress(0, audio.duration && isFinite(audio.duration) ? audio.duration : 30);
         } catch {
           setPlaybackState('playing');
-          setDuration(track.durationSeconds || 30);
+          playerProgressStore.setProgress(0, track.durationSeconds || 30);
         }
       } else {
-        setDuration(track.durationSeconds || 180);
+        playerProgressStore.setProgress(0, track.durationSeconds || 180);
         setPlaybackState('playing');
       }
     } else if (currentTrack) {
@@ -261,7 +323,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         audioRef.current.currentTime = 0;
         audioRef.current.play().catch(() => {});
       }
-      setCurrentTime(0);
+      playerProgressStore.setProgress(0, playerProgressStore.getSnapshot().duration);
       return;
     }
 
@@ -280,7 +342,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const nextTrack = queue[nextIndex];
     if (nextTrack) {
       setQueueIndex(nextIndex);
-      play(nextTrack);
+      play(nextTrack, playbackContextRef.current || undefined);
     }
   }, [queue, queueIndex, repeatMode, isShuffle, currentTrack, pause, play]);
 
@@ -296,6 +358,15 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const handleEnded = () => {
       if (activeEngineRef.current === 'html5') {
+        if (currentTrackRef.current) {
+          listeningEventTracker.recordTrackTransition(
+            currentTrackRef.current,
+            playerProgressStore.getSnapshot().duration,
+            playerProgressStore.getSnapshot().duration,
+            playbackContextRef.current,
+            queueIndexRef.current
+          );
+        }
         next();
       }
     };
@@ -304,25 +375,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return () => audio.removeEventListener('ended', handleEnded);
   }, [next]);
 
-  // Ticker de suporte para fallback HTML5
-  useEffect(() => {
-    if (playbackState !== 'playing' || activeEngineRef.current === 'youtube') return;
-
-    const timer = setInterval(() => {
-      const audio = audioRef.current;
-      if (audio && !audio.paused && !isNaN(audio.currentTime)) {
-        setCurrentTime(audio.currentTime);
-        if (audio.duration && isFinite(audio.duration) && audio.duration > 0) {
-          setDuration(audio.duration);
-        }
-      }
-    }, 100);
-
-    return () => clearInterval(timer);
-  }, [playbackState]);
-
   const seek = useCallback((seconds: number) => {
-    const clamped = Math.max(0, Math.min(seconds, duration || 30));
+    const dur = playerProgressStore.getSnapshot().duration || 30;
+    const clamped = Math.max(0, Math.min(seconds, dur));
     if (activeEngineRef.current === 'youtube') {
       youtubeAudioEngine.seekTo(clamped);
     } else if (audioRef.current && isFinite(clamped)) {
@@ -330,11 +385,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         audioRef.current.currentTime = clamped;
       } catch {}
     }
-    setCurrentTime(clamped);
-  }, [duration]);
+    playerProgressStore.setProgress(clamped, dur);
+  }, []);
 
   const previous = useCallback(() => {
-    if (currentTime > 3) {
+    const currentProgressTime = playerProgressStore.getSnapshot().currentTime;
+    if (currentProgressTime > 3) {
       seek(0);
       return;
     }
@@ -344,9 +400,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const prevTrack = queue[prevIndex];
     if (prevTrack) {
       setQueueIndex(prevIndex);
-      play(prevTrack);
+      play(prevTrack, playbackContextRef.current || undefined);
     }
-  }, [currentTime, queue, queueIndex, play]);
+  }, [queue, queueIndex, play, seek]);
 
   const setVolume = useCallback((vol: number) => {
     const clamped = Math.max(0, Math.min(1, vol));
@@ -373,9 +429,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   const toggleLike = useCallback((trackId: string) => {
-    setLikedTrackIds((prev) =>
-      prev.includes(trackId) ? prev.filter((id) => id !== trackId) : [...prev, trackId]
-    );
+    setLikedTrackIds((prev) => {
+      const isLikedNow = !prev.includes(trackId);
+      listeningEventTracker.recordLike(trackId, isLikedNow, playbackContextRef.current);
+      return isLikedNow ? [...prev, trackId] : prev.filter((id) => id !== trackId);
+    });
   }, []);
 
   const isLiked = useCallback(
@@ -387,14 +445,24 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setQueueState((prev) => [...prev, track]);
   }, []);
 
-  const setQueue = useCallback((tracks: Track[], startIndex = 0) => {
-    setQueueState(tracks);
-    const index = Math.max(0, Math.min(tracks.length - 1, startIndex));
-    setQueueIndex(index);
-    if (tracks[index]) {
-      play(tracks[index]);
-    }
-  }, [play]);
+  const setQueue = useCallback(
+    (tracks: Track[], startIndex = 0, context?: PlaybackContext) => {
+      setQueueState(tracks);
+      if (context) {
+        setPlaybackContextState(context);
+      }
+      const index = Math.max(0, Math.min(tracks.length - 1, startIndex));
+      setQueueIndex(index);
+      if (tracks[index]) {
+        play(tracks[index], context);
+      }
+    },
+    [play]
+  );
+
+  const setPlaybackContext = useCallback((context: PlaybackContext | null) => {
+    setPlaybackContextState(context);
+  }, []);
 
   return (
     <PlayerContext.Provider
@@ -402,8 +470,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         currentTrack,
         playbackState,
         isPlaying: playbackState === 'playing',
-        currentTime,
-        duration: duration > 0 ? duration : (currentTrack?.durationSeconds || 30),
         volume,
         isMuted,
         isShuffle,
@@ -411,6 +477,13 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         queue,
         queueIndex,
         likedTrackIds,
+        playbackContext,
+        get currentTime() {
+          return playerProgressStore.getSnapshot().currentTime;
+        },
+        get duration() {
+          return playerProgressStore.getSnapshot().duration;
+        },
         play,
         pause,
         resume,
@@ -426,6 +499,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         isLiked,
         addToQueue,
         setQueue,
+        setPlaybackContext,
       }}
     >
       {children}
@@ -440,3 +514,6 @@ export const usePlayer = (): PlayerContextType => {
   }
   return context;
 };
+
+// Re-exporta usePlayerProgress para consumo seletivo em componentes de progresso
+export { usePlayerProgress } from '@/stores/playerProgressStore';

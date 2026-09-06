@@ -1,5 +1,7 @@
 import { RouterProvider, useRouter } from '@/app/routes/router';
 import { PlayerProvider } from '@/stores/playerContext';
+import { AuthProvider } from '@/stores/authContext';
+import { AuthModal } from '@/components/modals/AuthModal';
 import { LandingPage } from '@/features/landing';
 import { AppLayout } from '@/app/layouts';
 
@@ -20,10 +22,13 @@ function MainRouterOutlet() {
 
 export default function App() {
   return (
-    <PlayerProvider>
-      <RouterProvider>
-        <MainRouterOutlet />
-      </RouterProvider>
-    </PlayerProvider>
+    <AuthProvider>
+      <PlayerProvider>
+        <RouterProvider>
+          <MainRouterOutlet />
+          <AuthModal />
+        </RouterProvider>
+      </PlayerProvider>
+    </AuthProvider>
   );
 }

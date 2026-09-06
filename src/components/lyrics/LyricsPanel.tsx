@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usePlayer } from '@/stores/playerContext';
+import { usePlayer, usePlayerProgress } from '@/stores/playerContext';
 import { useLyrics } from '@/hooks/useLyrics';
 import { formatSecondsToTime } from '@/providers/lyrics/lrclibLyricsProvider';
 import {
@@ -66,8 +66,6 @@ function hexToRgb(hex?: string): { r: number; g: number; b: number } {
 export const LyricsPanel: React.FC<LyricsPanelProps> = ({ isOpen, onClose }) => {
   const {
     currentTrack,
-    currentTime,
-    duration,
     isPlaying,
     togglePlay,
     next,
@@ -78,6 +76,8 @@ export const LyricsPanel: React.FC<LyricsPanelProps> = ({ isOpen, onClose }) => 
     isMuted,
     toggleMute,
   } = usePlayer();
+
+  const { currentTime, duration, progressPercent } = usePlayerProgress();
 
   const { lines, loading, isRealSynced, hasLyrics } = useLyrics(currentTrack || ({} as any));
   const [syncOffset, setSyncOffset] = useState<number>(0);
@@ -92,7 +92,6 @@ export const LyricsPanel: React.FC<LyricsPanelProps> = ({ isOpen, onClose }) => 
   const b2 = Math.min(255, (b + 120) % 255);
 
   const validDuration = duration > 0 ? duration : (currentTrack?.durationSeconds || 30);
-  const progressPercent = Math.min(100, Math.max(0, (currentTime / validDuration) * 100));
 
   // Controle refinado de interação manual do usuário (wheel, touch, drag)
   const isUserInteractingRef = useRef<boolean>(false);

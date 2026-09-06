@@ -3,6 +3,8 @@ import { usePlayer } from '@/stores/playerContext';
 import { usePlaylists } from '@/stores/playlistStore';
 import { musicService } from '@/services/music/musicService';
 import { Track } from '@/types/domain/music';
+import { useListeningSession } from '@/hooks/useListeningSession';
+import { LastSessionRecap } from '@/components/session/LastSessionRecap';
 import { formatSecondsToTime } from '@/providers/lyrics/lrclibLyricsProvider';
 import {
   Play,
@@ -22,7 +24,7 @@ interface CarouselProps {
   subtitle?: string;
   icon: React.ComponentType<{ className?: string }>;
   tracks: Track[];
-  onPlay: (tracks: Track[], index: number) => void;
+  onPlay: (tracks: Track[], index: number, sectionTitle?: string) => void;
   currentTrackId?: string;
   isPlaying?: boolean;
   onToggleLike: (id: string) => void;
@@ -100,7 +102,7 @@ const MusicCarousel: React.FC<CarouselProps> = ({
           return (
             <div
               key={`${track.id}-${idx}`}
-              onClick={() => onPlay(tracks, idx)}
+              onClick={() => onPlay(tracks, idx, title)}
               className="snap-start flex-shrink-0 w-36 sm:w-44 md:w-48 group cursor-pointer"
             >
               {/* Capa Quadrada Proporcional com Cantos Arredondados */}
@@ -191,6 +193,7 @@ const MusicCarousel: React.FC<CarouselProps> = ({
 export const HomePage: React.FC = () => {
   const { setQueue, currentTrack, isPlaying, toggleLike, isLiked } = usePlayer();
   const { openAddToPlaylistModal } = usePlaylists();
+  const { lastSession } = useListeningSession();
 
   // Estados dos catálogos dos carrosséis
   const [featuredTracks, setFeaturedTracks] = useState<Track[]>([]);
@@ -234,8 +237,12 @@ export const HomePage: React.FC = () => {
     };
   }, []);
 
-  const handlePlayQueue = (tracksList: Track[], index: number) => {
-    setQueue(tracksList, index);
+  const handlePlayQueue = (tracksList: Track[], index: number, sectionTitle?: string) => {
+    setQueue(tracksList, index, {
+      type: 'home',
+      title: sectionTitle || 'Home Editorial',
+      position: index,
+    });
   };
 
   // Faixa ativa para o Spotlight
@@ -301,7 +308,7 @@ export const HomePage: React.FC = () => {
               {/* Ações do Spotlight */}
               <div className="pt-2 flex items-center justify-center md:justify-start gap-3 flex-wrap">
                 <button
-                  onClick={() => handlePlayQueue(pool, spotlightIndex)}
+                  onClick={() => handlePlayQueue(pool, spotlightIndex, 'Spotlight MooSic')}
                   className="flex items-center gap-2.5 px-7 py-3 rounded-full bg-white hover:bg-white/90 text-black font-black text-xs sm:text-sm uppercase tracking-wider shadow-2xl hover:scale-105 active:scale-95 transition-all"
                 >
                   {isSpotlightCurrent && isPlaying ? (
@@ -378,6 +385,9 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* ================= 1.5. RECAP DA ÚLTIMA SESSÃO DE ESCUTA ================= */}
+      <LastSessionRecap session={lastSession} />
 
       {/* ================= 2. CARROSSÉIS HORIZONTAIS DE MÚSICAS ================= */}
       {loading ? (

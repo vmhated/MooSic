@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usePlayer } from '@/stores/playerContext';
+import { usePlayer, usePlayerProgress } from '@/stores/playerContext';
 import { formatSecondsToTime } from '@/providers/lyrics/lrclibLyricsProvider';
 import { LyricsPanel } from '@/components/lyrics';
 import {
@@ -47,8 +47,6 @@ export const PersistentBottomPlayer: React.FC = () => {
     currentTrack,
     playbackState,
     isPlaying,
-    currentTime,
-    duration,
     volume,
     isMuted,
     isShuffle,
@@ -66,6 +64,8 @@ export const PersistentBottomPlayer: React.FC = () => {
     isLiked,
   } = usePlayer();
 
+  const { currentTime, duration, progressPercent } = usePlayerProgress();
+
   const [showQueue, setShowQueue] = useState(false);
   const [showAudioProfile, setShowAudioProfile] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
@@ -76,28 +76,29 @@ export const PersistentBottomPlayer: React.FC = () => {
     Array.from({ length: 32 }, (_, i) => 25 + ((i * 17) % 55))
   );
 
+  // Ciclo autônomo e desacoplado do timer de currentTime para não destruir/recriar o timer continuamente
   useEffect(() => {
     if (!isPlaying) return;
+    let step = 0;
     const interval = setInterval(() => {
+      step += 0.2;
       setWaveHeights(
         Array.from({ length: 32 }, (_, i) => {
-          const base = 25 + Math.sin(currentTime * 5 + i * 0.45) * 45;
+          const base = 25 + Math.sin(step + i * 0.45) * 45;
           const jitter = Math.random() * 20;
           return Math.max(18, Math.min(92, Math.round(base + jitter)));
         })
       );
-    }, 100);
+    }, 120);
 
     return () => clearInterval(interval);
-  }, [isPlaying, currentTime]);
+  }, [isPlaying]);
 
   if (!currentTrack) {
     return null;
   }
 
-  // Cálculo seguro e contínuo da porcentagem de progresso (0% a 100%)
   const validDuration = duration > 0 ? duration : (currentTrack.durationSeconds || 30);
-  const progressPercent = Math.min(100, Math.max(0, (currentTime / validDuration) * 100));
 
   const liked = isLiked(currentTrack.id);
   const accentHex = currentTrack.accent || '#8B5CF6';
