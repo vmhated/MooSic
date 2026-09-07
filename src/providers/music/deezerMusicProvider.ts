@@ -154,6 +154,32 @@ export class DeezerMusicProvider implements IMusicProvider {
     return [];
   }
 
+  async getChartTracks(countryCode = '0', limit = 50): Promise<Track[]> {
+    const url = `https://api.deezer.com/chart/${countryCode}/tracks?limit=${limit}`;
+    try {
+      const data = await this.fetchJsonp<any>(url, 4000);
+      if (data && data.data && data.data.length > 0) {
+        return data.data.map((item: any, i: number) => DeezerAdapter.toDomainTrack(item, i));
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getGenreChart(genreId: string, limit = 20): Promise<Track[]> {
+    const url = `https://api.deezer.com/editorial/${genreId}/charts`;
+    try {
+      const data = await this.fetchJsonp<any>(url, 4000);
+      if (data && data.tracks && data.tracks.data) {
+        return data.tracks.data.slice(0, limit).map((item: any, i: number) => DeezerAdapter.toDomainTrack(item, i));
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
   /**
    * Returns the real global Deezer chart artists (top trending worldwide).
    * Uses /chart/0/artists — no guessing, no fake popular artists.

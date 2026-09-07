@@ -3,7 +3,7 @@ import { usePlayer } from '@/stores/playerContext';
 import { usePlaylists } from '@/stores/playlistStore';
 import { useRouter } from '@/app/routes/router';
 import { musicService } from '@/services/music/musicService';
-import { Track } from '@/types/domain/music';
+import { Track, Artist } from '@/types/domain/music';
 import { tasteProfileService } from '@/services/taste/tasteProfileService';
 import { TasteEntity } from '@/types/domain/taste';
 import { useListeningSession } from '@/hooks/useListeningSession';
@@ -49,39 +49,6 @@ function getGreeting(): { title: string; subtitle: string } {
   };
 }
 
-const FEATURED_ARTISTS = [
-  {
-    id: 'matue',
-    name: 'Matuê',
-    genre: 'Trap Brasil',
-    avatarUrl: 'https://cdn-images.dzcdn.net/images/artist/c42fcb920963cca4d195b939e51f19d1/1000x1000-000000-80-0-0.jpg',
-  },
-  {
-    id: 'the-weeknd',
-    name: 'The Weeknd',
-    genre: 'R&B / Synthpop',
-    avatarUrl: 'https://cdn-images.dzcdn.net/images/artist/581693b4724a7fcfa754455101e13a44/1000x1000-000000-80-0-0.jpg',
-  },
-  {
-    id: 'bk',
-    name: "BK'",
-    genre: 'Rap Nacional',
-    avatarUrl: 'https://cdn-images.dzcdn.net/images/artist/7481fc25e9bf8f0d8c416ecb9104927d/1000x1000-000000-80-0-0.jpg',
-  },
-  {
-    id: 'dua-lipa',
-    name: 'Dua Lipa',
-    genre: 'Disco Pop',
-    avatarUrl: 'https://cdn-images.dzcdn.net/images/artist/877872aaf75694f11d53c318700ab2b5/1000x1000-000000-80-0-0.jpg',
-  },
-  {
-    id: 'djonga',
-    name: 'Djonga',
-    genre: 'Lírica & Trap',
-    avatarUrl: 'https://cdn-images.dzcdn.net/images/artist/a685bd7ab1fd1234b7b420c59ca5be4f/1000x1000-000000-80-0-0.jpg',
-  },
-];
-
 export const HomePage: React.FC = () => {
   const { setQueue, currentTrack, isPlaying, toggleLike, isLiked } = usePlayer();
   const { openAddToPlaylistModal } = usePlaylists();
@@ -94,6 +61,7 @@ export const HomePage: React.FC = () => {
   const [chillTracks, setChillTracks] = useState<Track[]>([]);
   const [userArtists, setUserArtists] = useState<TasteEntity[]>([]);
   const [userGenres, setUserGenres] = useState<TasteEntity[]>([]);
+  const [trendingArtists, setTrendingArtists] = useState<Artist[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filtro rápido de humor
@@ -122,39 +90,58 @@ export const HomePage: React.FC = () => {
           setUserGenres(genres);
         }
 
+        const getDeezerGenreId = (name: string): string => {
+          const n = name.toLowerCase();
+          if (n.includes('rap') || n.includes('trap') || n.includes('hip')) return '116';
+          if (n.includes('pop')) return '132';
+          if (n.includes('eletr') || n.includes('dance')) return '113';
+          if (n.includes('rock')) return '152';
+          if (n.includes('latina') || n.includes('reggaeton')) return '197';
+          if (n.includes('r&b') || n.includes('soul')) return '165';
+          if (n.includes('sertanejo') || n.includes('brasil')) return '169'; 
+          return '132';
+        };
+
+        // 1. Spotlight Principal: Top 50 Brasil
+        const featuredRes = await Promise.allSettled([musicService.getChartTracks('75', 20)]).then(r => r[0]);
+        
+        // 2. Artistas em Alta Globais
+        const trendingArtistsRes = await Promise.allSettled([musicService.getChartArtists(15)]).then(r => r[0]);
 
         let trapRes: any = { status: 'fulfilled', value: { tracks: [] } };
         let popRes: any = { status: 'fulfilled', value: { tracks: [] } };
         let chillRes: any = { status: 'fulfilled', value: { tracks: [] } };
         
-        // Se temos um artista 1, pegamos as top tracks dele garantindo autoria
+        // Seção 1 (Trap/Destaque 1)
         if (artists.length >= 1) {
           trapRes.value.tracks = await musicService.getArtistTopTracks(artists[0].provider_id, 15);
+        } else if (genres.length >= 1) {
+          trapRes.value.tracks = await musicService.getGenreChart(getDeezerGenreId(genres[0].name), 15);
         } else {
-          trapRes = await Promise.allSettled([musicService.search('Matue BK Djonga Trap Brasil')]).then(r => r[0]);
+          trapRes.value.tracks = await musicService.getGenreChart('116', 15); // Hip-Hop/Rap Brasil
         }
 
-        // Se temos um artista 2
+        // Seção 2 (Pop/Destaque 2)
         if (artists.length >= 2) {
           popRes.value.tracks = await musicService.getArtistTopTracks(artists[1].provider_id, 15);
+        } else if (genres.length >= 2) {
+          popRes.value.tracks = await musicService.getGenreChart(getDeezerGenreId(genres[1].name), 15);
         } else {
-          popRes = await Promise.allSettled([musicService.search('The Weeknd Dua Lipa Pop Hits')]).then(r => r[0]);
+          popRes.value.tracks = await musicService.getGenreChart('132', 15); // Pop Brasil
         }
 
-        // Fallback genérico para a 3ª trilha usando as tags (ou buscar artista 3 se existir)
+        // Seção 3 (Chill/Destaque 3)
         if (artists.length >= 3) {
           chillRes.value.tracks = await musicService.getArtistTopTracks(artists[2].provider_id, 15);
+        } else if (genres.length >= 3) {
+          chillRes.value.tracks = await musicService.getGenreChart(getDeezerGenreId(genres[2].name), 15);
         } else {
-          const q3 = genres.length > 0 
-            ? `${genres[genres.length - 1].name} Lofi Chill Beats` 
-            : 'Lofi Chill Beats Study Synthwave';
-          chillRes = await Promise.allSettled([musicService.search(q3)]).then(r => r[0]);
+          chillRes.value.tracks = await musicService.getGenreChart('85', 15); // Alternative
         }
-
-        const featuredRes = await Promise.allSettled([musicService.getFeaturedTracks()]).then(r => r[0]);
 
         if (mounted) {
           if (featuredRes.status === 'fulfilled') setFeaturedTracks(featuredRes.value);
+          if (trendingArtistsRes.status === 'fulfilled') setTrendingArtists(trendingArtistsRes.value);
           if (trapRes.status === 'fulfilled') setTrapTracks(trapRes.value.tracks);
           if (popRes.status === 'fulfilled') setPopTracks(popRes.value.tracks);
           if (chillRes.status === 'fulfilled') setChillTracks(chillRes.value.tracks);
@@ -312,8 +299,8 @@ export const HomePage: React.FC = () => {
           {(selectedFilter === 'all' || selectedFilter === 'trap') && !loading && trapTracks.length > 0 && (
             <section className="space-y-4">
               <SectionHeader
-                title={userArtists.length > 0 ? `Baseado em ${userArtists[0].name}` : "Trap & Rimas Urbanas"}
-                subtitle={userArtists.length > 0 ? "Faixas inspiradas nos seus favoritos" : "Graves 808 marcantes, flow afiado e as maiores produções nacionais"}
+                title={userArtists.length > 0 ? `Baseado em ${userArtists[0].name}` : userGenres.length > 0 ? `O Melhor do ${userGenres[0].name}` : "Trap & Hip-Hop Brasil"}
+                subtitle={userArtists.length > 0 ? "Faixas inspiradas no seu artista favorito" : userGenres.length > 0 ? "As músicas que definem o seu gosto" : "As maiores produções nacionais nas paradas"}
                 icon={Flame}
                 tag="Em Alta"
               />
@@ -371,8 +358,8 @@ export const HomePage: React.FC = () => {
           {(selectedFilter === 'all' || selectedFilter === 'pop') && !loading && popTracks.length > 0 && (
             <section className="space-y-4">
               <SectionHeader
-                title={userArtists.length > 1 ? `Mistura de ${userArtists[1].name}` : "Pop & Sucessos Globais"}
-                subtitle={userArtists.length > 1 ? "Recomendações fresquinhas baseadas no seu perfil" : "Batidas contagiantes, vocais cintilantes e tendências internacionais"}
+                title={userArtists.length > 1 ? `Mistura de ${userArtists[1].name}` : userGenres.length > 1 ? `Para fãs de ${userGenres[1].name}` : "Pop & Sucessos Globais"}
+                subtitle={userArtists.length > 1 ? "Recomendações fresquinhas baseadas no seu perfil" : userGenres.length > 1 ? "Recomendações fresquinhas baseadas no seu perfil" : "As faixas mais tocadas no topo das paradas"}
                 icon={Radio}
                 hasScrollControls
                 onScrollLeft={() => setPopIndex((prev) => Math.max(0, prev - 4))}
@@ -404,8 +391,8 @@ export const HomePage: React.FC = () => {
           {(selectedFilter === 'all' || selectedFilter === 'chill') && !loading && chillTracks.length > 0 && (
             <section className="space-y-4">
               <SectionHeader
-                title={userGenres.length > 0 ? `Vibe: ${userGenres[userGenres.length - 1].name}` : "Sessão Lo-Fi & Foco Cósmico"}
-                subtitle={userGenres.length > 0 ? "Sons relaxantes para o seu gênero favorito" : "Texturas orgânicas e sintetizadores analógicos para estudo e desaceleração"}
+                title={userArtists.length > 2 ? `Baseado em ${userArtists[2].name}` : userGenres.length > 2 ? `Sua vibe: ${userGenres[2].name}` : "Cena Alternativa & Descobertas"}
+                subtitle={userArtists.length > 2 ? "Mais indicações personalizadas" : userGenres.length > 2 ? "Sons incríveis do seu gênero alternativo" : "Texturas novas e sons indie subindo nas paradas"}
                 icon={Coffee}
                 hasScrollControls
                 onScrollLeft={() => setChillIndex((prev) => Math.max(0, prev - 4))}
@@ -434,16 +421,16 @@ export const HomePage: React.FC = () => {
           )}
 
           {/* 7. ARTISTAS EM ALTA NO RADAR (CARROSSEL DE ARTISTAS) */}
-          {(selectedFilter === 'all' || selectedFilter === 'artists') && (
+          {(selectedFilter === 'all' || selectedFilter === 'artists') && trendingArtists.length > 0 && (
             <section className="space-y-4">
               <SectionHeader
-                title={userArtists.length > 0 ? "Seus Artistas Favoritos" : "Artistas em Destaque no Radar"}
-                subtitle={userArtists.length > 0 ? "O núcleo do seu gosto musical" : "Os criadores e produtores mais ouvidos no ecossistema MooSic"}
+                title="Artistas em Destaque no Radar"
+                subtitle="Os criadores e produtores mais ouvidos do momento"
                 icon={Users}
               />
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-4">
-                {(userArtists.length > 0 ? userArtists : FEATURED_ARTISTS).slice(0, 5).map((artist: any) => (
+                {trendingArtists.slice(0, 5).map((artist: any) => (
                   <ArtistCard
                     key={artist.id || artist.provider_id}
                     id={artist.id || artist.provider_id}

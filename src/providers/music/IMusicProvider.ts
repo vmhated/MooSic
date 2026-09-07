@@ -21,4 +21,9 @@ export interface IMusicProvider {
   searchArtists(query: string): Promise<Artist[]>;
   searchAlbums(query: string): Promise<Album[]>;
   getFeaturedTracks(): Promise<Track[]>;
+
+  // Charts & Feeds Dinâmicos
+  getChartTracks(countryCode?: string, limit?: number): Promise<Track[]>;
+  getChartArtists(limit?: number): Promise<Artist[]>;
+  getGenreChart(genreId: string, limit?: number): Promise<Track[]>;
 }

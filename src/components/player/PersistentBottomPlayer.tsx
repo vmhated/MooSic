@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayer, usePlayerProgress } from '@/stores/playerContext';
 import { formatSecondsToTime } from '@/providers/lyrics/lrclibLyricsProvider';
 import { useDynamicTheme } from '@/hooks/useDynamicTheme';
+import { SyncedCover } from '@/components/ui/SyncedCover';
 import { LyricsPanel } from '@/components/lyrics';
 import {
   Play,
@@ -216,7 +217,7 @@ export const PersistentBottomPlayer: React.FC = () => {
                   }`}
                   style={{ animationDuration: '7s' }}
                 >
-                  <img
+                  <SyncedCover
                     src={currentTrack.coverUrl}
                     alt={currentTrack.title}
                     className="w-full h-full object-cover"

@@ -94,6 +94,18 @@ export class MusicBrainzProvider implements IMusicProvider {
     return [];
   }
 
+  async getChartTracks(_countryCode?: string, _limit?: number): Promise<Track[]> {
+    return [];
+  }
+
+  async getChartArtists(_limit?: number): Promise<Artist[]> {
+    return [];
+  }
+
+  async getGenreChart(_genreId: string, _limit?: number): Promise<Track[]> {
+    return [];
+  }
+
   /**
    * Busca avançada multi-termo para artistas, bandas e faixas com desduplicação
    */

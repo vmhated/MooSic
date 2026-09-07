@@ -53,6 +53,18 @@ export class MusicService {
     return this.activeProvider.getArtistTopTracks(artistId, limit);
   }
 
+  public async getChartTracks(countryCode?: string, limit?: number): Promise<Track[]> {
+    return this.activeProvider.getChartTracks(countryCode, limit);
+  }
+
+  public async getChartArtists(limit?: number): Promise<Artist[]> {
+    return this.activeProvider.getChartArtists(limit);
+  }
+
+  public async getGenreChart(genreId: string, limit?: number): Promise<Track[]> {
+    return this.activeProvider.getGenreChart(genreId, limit);
+  }
+
   public async search(query: string): Promise<SearchResults> {
     return this.activeProvider.search(query);
   }

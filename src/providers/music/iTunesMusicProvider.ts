@@ -74,6 +74,18 @@ export class ITunesMusicProvider implements IMusicProvider {
     }
   }
 
+  async getChartTracks(_countryCode?: string, _limit?: number): Promise<Track[]> {
+    return [];
+  }
+
+  async getChartArtists(_limit?: number): Promise<Artist[]> {
+    return [];
+  }
+
+  async getGenreChart(_genreId: string, _limit?: number): Promise<Track[]> {
+    return [];
+  }
+
   /**
    * Busca multi-critério global no catálogo da Apple Music
    */

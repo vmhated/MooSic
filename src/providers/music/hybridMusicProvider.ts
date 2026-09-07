@@ -62,6 +62,18 @@ export class HybridMusicProvider implements IMusicProvider {
     return deezerMusicProvider.getArtistTopTracks(artistId, limit);
   }
 
+  async getChartTracks(countryCode?: string, limit?: number): Promise<Track[]> {
+    return deezerMusicProvider.getChartTracks(countryCode, limit);
+  }
+
+  async getChartArtists(limit?: number): Promise<Artist[]> {
+    return deezerMusicProvider.getChartArtists(limit);
+  }
+
+  async getGenreChart(genreId: string, limit?: number): Promise<Track[]> {
+    return deezerMusicProvider.getGenreChart(genreId, limit);
+  }
+
   /**
    * Busca federada simultânea em múltiplos motores globais
    */

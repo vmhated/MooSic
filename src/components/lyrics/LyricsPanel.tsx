@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayer, usePlayerProgress } from '@/stores/playerContext';
 import { useLyrics } from '@/hooks/useLyrics';
 import { formatSecondsToTime } from '@/providers/lyrics/lrclibLyricsProvider';
+import { SyncedCover } from '@/components/ui/SyncedCover';
 import { FlowRecommendationReason } from '@/types/domain/flow';
 import {
   X,
@@ -194,7 +195,7 @@ export const LyricsPanel: React.FC<LyricsPanelProps> = ({ isOpen, onClose, initi
     activeIndex = bestIdx;
   }
 
-  // Auto-scroll
+  // Auto-scroll robusto usando offsetTop
   useEffect(() => {
     if (isUserInteractingRef.current || activeIndex < 0 || activeTab !== 'lyrics') return;
 
@@ -202,10 +203,9 @@ export const LyricsPanel: React.FC<LyricsPanelProps> = ({ isOpen, onClose, initi
     const activeEl = activeLineRef.current;
     if (!container || !activeEl) return;
 
-    const activeRect = activeEl.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-    const activeRelativeTop = activeRect.top - containerRect.top + container.scrollTop;
-    const targetScroll = activeRelativeTop - container.clientHeight * 0.35 + activeRect.height / 2;
+    // offsetTop é a distância real do topo do container (pois o main tem position: relative).
+    // Isso é super estável e não buga com animações de scale do framer-motion.
+    const targetScroll = activeEl.offsetTop - container.clientHeight / 2 + activeEl.clientHeight / 2;
 
     container.scrollTo({
       top: Math.max(0, targetScroll),
@@ -362,41 +362,24 @@ export const LyricsPanel: React.FC<LyricsPanelProps> = ({ isOpen, onClose, initi
           {/* ================= 2. CORPO PRINCIPAL ================= */}
           {activeTab === 'lyrics' ? (
             /* ================= VISUALIZAÇÃO DE LETRAS VIVAS ================= */
-            <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 px-4 sm:px-10 py-6 max-w-7xl mx-auto w-full items-center">
-              {/* Lado Esquerdo: Capa & Informações */}
-              <div className="col-span-1 lg:col-span-5 flex flex-col items-center text-center space-y-5 select-none">
-                <div className="relative group">
-                  {/* Disco de Vinil com rotação */}
-                  <div
-                    className={`absolute -top-3 sm:-top-5 -right-6 sm:-right-10 w-44 h-44 sm:w-56 sm:h-56 lg:w-64 lg:h-64 rounded-full bg-[#0a0a0c] border border-white/20 shadow-2xl flex items-center justify-center -z-10 transition-transform duration-700 ${
-                      isPlaying ? 'translate-x-4 sm:translate-x-8 rotate-[45deg]' : 'translate-x-0'
-                    }`}
-                  >
-                    <div
-                      className={`w-full h-full rounded-full border-[10px] sm:border-[16px] border-[#16161c] flex items-center justify-center ${
-                        isPlaying ? 'animate-spin' : ''
-                      }`}
-                      style={{ animationDuration: '9s' }}
-                    >
-                      <div className="w-20 h-20 rounded-full border-2 border-white/40 flex items-center justify-center bg-brand-purple">
-                        <div className="w-5 h-5 rounded-full bg-background border-2 border-white/80 shadow-md" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Capa Principal */}
-                  <div
-                    className="relative w-48 h-48 sm:w-60 sm:h-60 lg:w-72 lg:h-72 rounded-3xl overflow-hidden shadow-2xl border border-white/20 transition-transform duration-500 hover:scale-[1.02] z-10"
-                    style={{
-                      boxShadow: `0 25px 60px rgba(0,0,0,0.85), 0 0 45px rgba(${r}, ${g}, ${b}, 0.4)`,
-                    }}
-                  >
-                    <img
-                      src={currentTrack.coverUrl}
-                      alt={currentTrack.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+            <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 px-4 sm:px-10 py-6 max-w-[1400px] mx-auto w-full items-center">
+              {/* Lado Esquerdo: Capa Flutuante & Informações */}
+              <div className="col-span-1 lg:col-span-5 flex flex-col items-center text-center space-y-8 select-none">
+                
+                {/* Capa Principal Flutuante (Premium Apple Music Style) */}
+                <div
+                  className="relative w-56 h-56 sm:w-72 sm:h-72 lg:w-96 lg:h-96 rounded-3xl overflow-hidden transition-transform duration-700 hover:scale-[1.02] z-10"
+                  style={{
+                    boxShadow: `0 35px 60px -15px rgba(0,0,0,0.9), 0 0 80px rgba(${r}, ${g}, ${b}, 0.35)`,
+                  }}
+                >
+                  <SyncedCover
+                    src={currentTrack.coverUrl}
+                    alt={currentTrack.title}
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Subtle glass reflection overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/20 pointer-events-none mix-blend-overlay" />
                 </div>
 
                 {/* Título & Artista */}
@@ -437,7 +420,11 @@ export const LyricsPanel: React.FC<LyricsPanelProps> = ({ isOpen, onClose, initi
                   onWheel={handleUserInteractionStart}
                   onTouchMove={handleUserInteractionStart}
                   onPointerDown={handleUserInteractionStart}
-                  className="col-span-1 lg:col-span-7 overflow-y-auto h-full pr-2 sm:pr-6 py-12 scrollbar-none flex flex-col space-y-6 sm:space-y-7 relative"
+                  className="col-span-1 lg:col-span-7 overflow-y-auto h-full pr-2 sm:pr-6 py-[15vh] scrollbar-none flex flex-col space-y-6 sm:space-y-7 relative"
+                  style={{
+                    maskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)'
+                  }}
                 >
                   {loading ? (
                     <div className="h-full flex flex-col items-center justify-center space-y-3 py-20 text-center">
@@ -454,16 +441,16 @@ export const LyricsPanel: React.FC<LyricsPanelProps> = ({ isOpen, onClose, initi
                           key={`${line.time}-${idx}`}
                           ref={isActive ? activeLineRef : null}
                           onClick={() => handleLineClick(idx, line.time)}
-                          className={`cursor-pointer transition-all duration-300 rounded-2xl p-2 sm:p-3 select-none text-left ${
+                          className={`cursor-pointer transition-all duration-500 ease-out rounded-2xl p-2 sm:p-3 select-none text-left ${
                             isActive
-                              ? 'scale-105 font-black text-white pl-4 sm:pl-6 border-l-4'
+                              ? 'scale-105 font-black text-white pl-4 sm:pl-6'
                               : isPast
-                              ? 'text-white/40 hover:text-white/75 font-semibold'
-                              : 'text-white/30 hover:text-white/70 font-semibold'
+                              ? 'text-white/30 hover:text-white/60 font-semibold blur-[0.5px]'
+                              : 'text-white/30 hover:text-white/60 font-semibold blur-[0.5px]'
                           }`}
                           style={{
-                            borderLeftColor: isActive ? accentHex : 'transparent',
-                            textShadow: isActive ? `0 0 25px rgba(${r}, ${g}, ${b}, 0.8)` : 'none',
+                            textShadow: isActive ? `0 0 35px rgba(${r}, ${g}, ${b}, 0.9)` : 'none',
+                            color: isActive ? '#FFFFFF' : 'rgba(255,255,255,0.4)',
                           }}
                         >
                           <p
@@ -498,10 +485,10 @@ export const LyricsPanel: React.FC<LyricsPanelProps> = ({ isOpen, onClose, initi
                   }}
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
-                    <img
+                    <SyncedCover
                       src={currentTrack.coverUrl}
                       alt={currentTrack.title}
-                      className="w-14 h-14 rounded-2xl object-cover shadow-md border border-white/10"
+                      className="w-14 h-14 rounded-2xl shadow-md border border-white/10"
                     />
                     <div className="min-w-0 space-y-0.5">
                       <div className="flex items-center gap-2">
@@ -574,10 +561,10 @@ export const LyricsPanel: React.FC<LyricsPanelProps> = ({ isOpen, onClose, initi
                           <span className="text-xs font-mono text-text-muted w-5 text-center">
                             #{idx + 1}
                           </span>
-                          <img
+                          <SyncedCover
                             src={track.coverUrl}
                             alt={track.title}
-                            className="w-10 h-10 rounded-xl object-cover flex-shrink-0"
+                            className="w-10 h-10 rounded-xl flex-shrink-0"
                           />
                           <div className="min-w-0">
                             <p className="text-xs font-bold truncate text-white group-hover:text-brand-light transition-colors">

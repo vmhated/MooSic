@@ -71,6 +71,18 @@ export class MockMusicProvider implements IMusicProvider {
     return this.getFeaturedTracks();
   }
 
+  async getChartTracks(_countryCode?: string, _limit?: number): Promise<Track[]> {
+    return this.getFeaturedTracks();
+  }
+
+  async getChartArtists(_limit?: number): Promise<Artist[]> {
+    return [];
+  }
+
+  async getGenreChart(_genreId: string, _limit?: number): Promise<Track[]> {
+    return this.getFeaturedTracks();
+  }
+
   async search(query: string): Promise<SearchResults> {
     const q = query.toLowerCase();
     const matched = this.tracks.filter(
