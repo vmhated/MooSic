@@ -648,6 +648,52 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setPlaybackContextState(context);
   }, []);
 
+  // --- MEDIA SESSION API INTEGRATION ---
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      if (currentTrack) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: currentTrack.title,
+          artist: currentTrack.artistName,
+          album: currentTrack.albumTitle || 'MooSic Single',
+          artwork: currentTrack.coverUrl ? [
+            { src: currentTrack.coverUrl, sizes: '500x500', type: 'image/jpeg' },
+            { src: currentTrack.coverUrl, sizes: '1000x1000', type: 'image/jpeg' }
+          ] : []
+        });
+
+        navigator.mediaSession.playbackState = playbackState === 'playing' ? 'playing' : 'paused';
+      } else {
+        navigator.mediaSession.metadata = null;
+        navigator.mediaSession.playbackState = 'none';
+      }
+    }
+  }, [currentTrack, playbackState]);
+
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('play', () => { play(); });
+      navigator.mediaSession.setActionHandler('pause', () => { pause(); });
+      navigator.mediaSession.setActionHandler('previoustrack', () => { previous(); });
+      navigator.mediaSession.setActionHandler('nexttrack', () => { next(); });
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.seekTime && details.seekTime > 0) {
+          seek(details.seekTime);
+        }
+      });
+    }
+    
+    return () => {
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.setActionHandler('play', null);
+        navigator.mediaSession.setActionHandler('pause', null);
+        navigator.mediaSession.setActionHandler('previoustrack', null);
+        navigator.mediaSession.setActionHandler('nexttrack', null);
+        navigator.mediaSession.setActionHandler('seekto', null);
+      }
+    }
+  }, [play, pause, previous, next, seek]);
+
   // Fila combinada para compatibilidade de visualização
   const effectiveQueue = useMemo<Track[]>(() => {
     const list: Track[] = [];

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayer, usePlayerProgress } from '@/stores/playerContext';
 import { formatSecondsToTime } from '@/providers/lyrics/lrclibLyricsProvider';
+import { useDynamicTheme } from '@/hooks/useDynamicTheme';
 import { LyricsPanel } from '@/components/lyrics';
 import {
   Play,
@@ -65,6 +66,8 @@ export const PersistentBottomPlayer: React.FC = () => {
     toggleLike,
     isLiked,
   } = usePlayer();
+  
+  const { rgbString, hex } = useDynamicTheme(currentTrack?.coverUrl);
 
   const { currentTime, duration, progressPercent } = usePlayerProgress();
 
@@ -104,7 +107,7 @@ export const PersistentBottomPlayer: React.FC = () => {
   const validDuration = duration > 0 ? duration : (currentTrack.durationSeconds || 30);
 
   const liked = isLiked(currentTrack.id);
-  const accentHex = currentTrack.accent || '#8B5CF6';
+  const accentHex = hex || currentTrack.accent || '#8B5CF6';
   const { r, g, b } = hexToRgb(accentHex);
   // Cor secundária complementar para gradiente bi-cromático rico
   const r2 = Math.min(255, (r + 70) % 255);
@@ -222,7 +225,7 @@ export const PersistentBottomPlayer: React.FC = () => {
                   <div className="absolute inset-0 m-auto w-3.5 h-3.5 rounded-full bg-background border-2 border-white/80 shadow-inner flex items-center justify-center">
                     <span
                       className="w-1.5 h-1.5 rounded-full"
-                      style={{ backgroundColor: accentHex }}
+                      style={{ backgroundColor: `rgb(${rgbString})` }}
                     />
                   </div>
                 </div>
@@ -432,6 +435,7 @@ export const PersistentBottomPlayer: React.FC = () => {
                   className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)] border border-black/20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
                   style={{
                     left: `calc(${progressPercent}% - 6px)`,
+                    backgroundColor: `rgb(${rgbString})`
                   }}
                 />
 

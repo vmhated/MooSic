@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://via.placeholder.com/150/000000/FFFFFF?text=MooSic" alt="MooSic Logo" width="150"/>
+  <img src="public/logo.png" alt="MooSic Logo" width="300"/>
   <h1>MooSic</h1>
   <p><strong>A Next-Generation Music Streaming Engine & Audio Intelligence Platform</strong></p>
 </div>
