@@ -1,25 +1,37 @@
-# MooSic 🎵
-
-> **"O MooSic não apenas reproduz músicas. Ele entende a sessão musical do usuário."**
-
-Plataforma contemporânea de reprodução, imersão acústica e inteligência musical. Construída com arquitetura limpa, desacoplamento de alta performance, síntese harmônica via Web Audio API e diagnóstico de DNA sonoro.
+<div align="center">
+  <img src="https://via.placeholder.com/150/000000/FFFFFF?text=MooSic" alt="MooSic Logo" width="150"/>
+  <h1>MooSic</h1>
+  <p><strong>A Next-Generation Music Streaming Engine & Audio Intelligence Platform</strong></p>
+</div>
 
 ---
 
-## ✨ Destaques da Plataforma
+## 🎵 Visão Geral
 
-* 🎧 **Core Player Desacoplado & Hi-Fi:** Estado de alta frequência (`currentTime` a cada 100ms) isolado via `useSyncExternalStore`, eliminando 100% dos re-renders desnecessários em páginas e listas. Protegido contra *race conditions* em trocas rápidas de faixas (A → B → C).
-* 📜 **Letras Sincronizadas com Auto-Scroll:** Integração com provedores LRC (LRCLIB), com suporte a seek ao clicar no verso e tratamento para faixas instrumentais ou sem letra cadastrada.
-* 🧬 **Playlist DNA Engine:** Diagnóstico espectral de listas em tempo real, calculando índices de *Energia Sonora*, *Atmosfera & Espaço*, *Dançabilidade*, *Presença Vocal*, *BPM Médio* e arquétipos sonoros (ex: *⚡ Pulso Eletrizante & Beat Urbano*).
-* 📖 **Inteligência de Sessão & Histórico ("Session Story"):** Rastreamento comportamental com detecção de *Skip Rápido* (< 25s), *Conclusão Relevante* (≥ 85%), consolidação automática por inatividade e síntese narrativa editorial (*"Sua Última Sessão"*).
-* 🌌 **MooSic Resonator (Harmonic Tuning):** Síntese paralela contínua via Web Audio API com frequências de solfeggio e ruído de foco (432Hz, 528Hz, Ondas Alpha 10Hz e Brown Noise) com osciloscópio visual.
-* 🔐 **Sistema de Autenticação Refinado:** Experiência moderna em *dark glassmorphism*, suportando login, cadastro de novos ouvintes e acesso com 1 clique como Convidado VIP.
+**MooSic** é uma plataforma de streaming contemporânea desenvolvida com foco em alta fidelidade acústica, inteligência musical e arquitetura de software limpa (Clean Architecture). Diferente de reprodutores convencionais, o MooSic analisa o **DNA Sonoro** de seus usuários, realiza buscas federadas em tempo real em múltiplos catálogos globais e proporciona uma experiência imersiva através de sintonização harmônica (Web Audio API) e interfaces em *Dark Glassmorphism*.
+
+> *"O MooSic não apenas reproduz músicas. Ele entende a essência cultural e a sessão musical do usuário."*
+
+---
+
+## ✨ Recursos Core & Engenharia de Produto
+
+* 🎧 **Core Player Desacoplado & Hi-Fi:** Mecanismo de estado de áudio de alta precisão (`currentTime` a cada 100ms) isolado via `useSyncExternalStore`. Essa abordagem garante 0% de re-renders desnecessários na interface, protegendo o sistema contra *race conditions* em trocas rápidas de faixas (A → B → C).
+* 🧠 **Taste Profile & Tagueamento Cultural:** Sistema de onboarding inteligente integrado à API do **MusicBrainz**. O MooSic extrai tags culturais, subgêneros e origens geográficas (ex: *Synthpop, Manguebeat, UK*) para construir matrizes de recomendação altamente semânticas.
+* 🎼 **Top Tracks Architecture:** Prevenção absoluta contra poluição de catálogo. As consultas de recomendação são orientadas diretamente a IDs oficiais de provedores, garantindo 100% de precisão de discografia original e eliminando covers ou faixas falsamente atribuídas.
+* 📜 **Sincronia Lírica em Tempo Real:** Integração contínua com provedores de metadados LRC. Renderiza letras sincronizadas via auto-scroll, suportando *seek* dinâmico com tratamento inteligente para arranjos instrumentais.
+* 🧬 **Playlist DNA Engine:** Mapeamento espectral avançado. O motor calcula e plota em tempo real atributos como *Energia Sonora, Atmosfera, Dançabilidade* e *Presença Vocal*, definindo arquétipos sonoros para qualquer playlist.
+* 🌌 **MooSic Resonator (Harmonic Tuning):** Síntese paralela via **Web Audio API**. Capacidade de sobrepor frequências de Solfeggio (ex: 432Hz, 528Hz), Ondas Alpha e Brown Noise de forma procedural, enriquecendo o foco do ouvinte.
+* 🔐 **Autenticação & Estado Descentralizado:** Infraestrutura conectada ao **Supabase**, garantindo persistência de histórico, *Taste Profiles* e sessões de escuta em tempo real.
 
 ---
 
 ## 🏗️ Arquitetura de Software
 
-O MooSic adota uma arquitetura em camadas orientada a domínio (Clean Architecture + Provider Pattern):
+O MooSic implementa o **Provider Pattern** acoplado a uma variação de **Clean Architecture**, permitindo que o serviço de música interno seja completamente agnóstico à origem do áudio (Deezer, iTunes, MusicBrainz, YouTube).
+
+### The Federated Hybrid Engine
+Nosso orquestrador de catálogos consulta simultaneamente APIs de alta disponibilidade, agregando capas de estúdio (1000x1000px) e metadados densos em tempo real com deduplicação sob demanda (On-the-fly Deduplication).
 
 ```text
                      ┌───────────────────────────────────┐
@@ -42,102 +54,71 @@ O MooSic adota uma arquitetura em camadas orientada a domínio (Clean Architectu
             │
             ▼
 ┌──────────────────┐
-│  Session Service │ (Consolidação de Sessões & Narrativas Temporais)
-│   & History      │
+│ Taste Profile DB │ (MusicBrainz Enrichment & Supabase Persistence)
 └──────────────────┘
 ```
 
-### Principais Módulos do Código-Fonte:
+---
 
-```text
-src/
-├── app/
-│   ├── layouts/          # Layout mestre (AppLayout, Sidebar, Topbar)
-│   └── routes/           # Roteamento por hash e histórico de navegação
-├── components/
-│   ├── lyrics/           # Painel de letras sincronizadas e visualizador
-│   ├── modals/           # Modais (AuthModal, CreatePlaylist, Resonator, AddToPlaylist)
-│   ├── navigation/       # Topbar dinâmica, perfil de usuário e Sidebar
-│   ├── player/           # PersistentBottomPlayer (scrubber isolado e áudio 3D)
-│   ├── playlist/         # PlaylistDNABar (gráficos de DNA e métricas de áudio)
-│   └── session/          # LastSessionRecap (card editorial da última sessão)
-├── features/
-│   ├── home/             # Spotlight Billboard e carrosséis horizontais
-│   ├── search/           # Busca universal e estações temáticas de gêneros
-│   ├── library/          # Músicas Curtidas, Histórico de Escuta e Sessões
-│   ├── playlists/        # Visualizador e gerenciador de playlists autorais
-│   └── landing/          # Landing Page editorial imersiva de alta fidelidade
-├── providers/            # Adaptadores de conteúdo (Music, Lyrics, Audio)
-├── services/
-│   ├── audio/            # Motores de áudio (YouTube IFrame, Resonator Web Audio)
-│   ├── music/            # Orquestrador de catálogos e desambiguação
-│   ├── playlist/         # Motor de cálculo determinístico de Playlist DNA
-│   └── session/          # Rastreador de eventos de escuta e agregador de sessões
-└── stores/               # Contextos de estado (Player, Progress, Auth, Playlists)
-```
+## 🚀 Stack Tecnológico
+
+A plataforma foi construída com as tecnologias mais modernas e robustas do ecossistema Web:
+
+* **Framework & Core:** React 18+ com TypeScript 5+ (Tipagem Estrita)
+* **Build System:** Vite (Fast HMR & Optimized Bundling)
+* **Estilização UI/UX:** Tailwind CSS (Design Tokens, Glassmorphism, Micro-interações)
+* **Gerenciamento de Estado:** React Context + `useSyncExternalStore`
+* **Processamento de Sinal:** Web Audio API (Analysers, Biquad Filters, Gain Nodes)
+* **Backend as a Service (BaaS):** Supabase (PostgreSQL, Auth, RLS)
+* **Integrações Externas:** Deezer API, Apple Music Search, MusicBrainz Open Data, LRCLIB.
 
 ---
 
-## 🚀 Tech Stack
-
-* **Core:** React 18+ (TypeScript 5+)
-* **Build Tool:** Vite
-* **Estilização:** Tailwind CSS (com Design Tokens em TypeScript e Glassmorphism)
-* **Gerenciamento de Estado:** React Context + `useSyncExternalStore` (para desempenho sem re-renders)
-* **Motor de Áudio:** Web Audio API (Osciladores, Nós de Ganho, Analisadores de Frequência, Áudio 3D) + YouTube IFrame API
-* **Ícones:** Lucide React
-
----
-
-## 💻 Como Executar Localmente
+## 💻 Ambiente de Desenvolvimento
 
 ### Pré-requisitos
 * Node.js v18 ou superior
 * npm v9 ou superior
+* (Opcional) Conta Supabase para persistência de dados.
 
-### Passo a Passo
+### Instalação Rápida
 
-1. **Clone o repositório:**
+1. **Clonando o repositório:**
    ```bash
    git clone https://github.com/vmhated/MooSic.git
    cd MooSic
    ```
 
-2. **Instale as dependências:**
+2. **Instalando dependências:**
    ```bash
    npm install
    ```
 
-3. **Inicie o servidor de desenvolvimento:**
+3. **Iniciando o Servidor de Desenvolvimento:**
    ```bash
    npm run dev
    ```
 
-4. **Acesse no navegador:**
-   - Landing Page: `http://localhost:3000/#/`
-   - Web Player: `http://localhost:3000/app#/app`
+4. **Acessando a Aplicação:**
+   - Interface Principal (Web Player): `http://localhost:3000/app`
+   - Landing Page Institucional: `http://localhost:3000/`
 
-### Comandos de Validação
+---
 
-* **Verificação de Tipagem (TypeScript):**
+## 🧪 Qualidade de Código & Deploy
+
+* **Validação Estática (TypeScript):**
   ```bash
-  npm run lint
-  # ou
   npx tsc --noEmit
   ```
-
-* **Build de Produção:**
+* **Build de Produção (Bundling):**
   ```bash
   npm run build
   ```
 
 ---
 
-## 📄 Documentação Técnica e Especificações
-
-* 📘 [`docs/architecture/MOOSIC_PRODUCT_SPEC.md`](file:///c:/Users/vctrz/OneDrive/Documentos/vm/vmprojetos/MooSic/docs/architecture/MOOSIC_PRODUCT_SPEC.md) — Visão completa de produto, taxonomia, jornadas de usuário e modelos de dados.
-* 📙 [`docs/architecture/MOOSIC_TECHNICAL_AUDIT.md`](file:///c:/Users/vctrz/OneDrive/Documentos/vm/vmprojetos/MooSic/docs/architecture/MOOSIC_TECHNICAL_AUDIT.md) — Auditoria técnica detalhada e status de implementação das etapas P0 e P1.
-
----
-
-Desenvolvido com paixão e precisão acústica para elevar a experiência do streaming de áudio.
+<div align="center">
+  <p>Construído com extrema precisão algorítmica e paixão pela acústica.</p>
+  <p><strong>© 2026 MooSic - Premium Audio Streaming.</strong></p>
+</div>

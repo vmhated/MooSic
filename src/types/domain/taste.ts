@@ -14,6 +14,8 @@ export interface TasteEntity {
   source: SignalSource;
   confidence: number; // 0.0 to 1.0
   added_at: string;
+  tags?: string[];
+  culture?: string;
 }
 
 export interface TasteProfile {

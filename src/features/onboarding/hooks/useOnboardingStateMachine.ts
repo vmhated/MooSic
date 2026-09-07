@@ -61,9 +61,10 @@ export function useOnboardingStateMachine() {
     }
   }, []);
 
-  const updateDraft = useCallback((updates: Partial<TasteProfile>) => {
+  const updateDraft = useCallback((updates: Partial<TasteProfile> | ((prev: Partial<TasteProfile>) => Partial<TasteProfile>)) => {
     setState(prev => {
-      const newDraft = { ...prev.draft, ...updates };
+      const resolvedUpdates = typeof updates === 'function' ? updates(prev.draft) : updates;
+      const newDraft = { ...prev.draft, ...resolvedUpdates };
       onboardingStorage.saveDraft(newDraft);
       return { ...prev, draft: newDraft };
     });

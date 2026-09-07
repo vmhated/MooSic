@@ -4,6 +4,8 @@ import { usePlaylists } from '@/stores/playlistStore';
 import { useRouter } from '@/app/routes/router';
 import { musicService } from '@/services/music/musicService';
 import { Track } from '@/types/domain/music';
+import { tasteProfileService } from '@/services/taste/tasteProfileService';
+import { TasteEntity } from '@/types/domain/taste';
 import { useListeningSession } from '@/hooks/useListeningSession';
 import { LastSessionRecap } from '@/components/session/LastSessionRecap';
 import {
@@ -90,6 +92,8 @@ export const HomePage: React.FC = () => {
   const [trapTracks, setTrapTracks] = useState<Track[]>([]);
   const [popTracks, setPopTracks] = useState<Track[]>([]);
   const [chillTracks, setChillTracks] = useState<Track[]>([]);
+  const [userArtists, setUserArtists] = useState<TasteEntity[]>([]);
+  const [userGenres, setUserGenres] = useState<TasteEntity[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filtro rápido de humor
@@ -109,12 +113,45 @@ export const HomePage: React.FC = () => {
 
     async function loadFeeds() {
       try {
-        const [featuredRes, trapRes, popRes, chillRes] = await Promise.allSettled([
-          musicService.getFeaturedTracks(),
-          musicService.search('Matue BK Djonga Trap Brasil'),
-          musicService.search('The Weeknd Dua Lipa Pop Hits'),
-          musicService.search('Lofi Chill Beats Study Synthwave'),
-        ]);
+        const profile = await tasteProfileService.getProfile();
+        const artists = profile?.favorite_artists || [];
+        const genres = profile?.favorite_genres || [];
+
+        if (mounted) {
+          setUserArtists(artists);
+          setUserGenres(genres);
+        }
+
+
+        let trapRes: any = { status: 'fulfilled', value: { tracks: [] } };
+        let popRes: any = { status: 'fulfilled', value: { tracks: [] } };
+        let chillRes: any = { status: 'fulfilled', value: { tracks: [] } };
+        
+        // Se temos um artista 1, pegamos as top tracks dele garantindo autoria
+        if (artists.length >= 1) {
+          trapRes.value.tracks = await musicService.getArtistTopTracks(artists[0].provider_id, 15);
+        } else {
+          trapRes = await Promise.allSettled([musicService.search('Matue BK Djonga Trap Brasil')]).then(r => r[0]);
+        }
+
+        // Se temos um artista 2
+        if (artists.length >= 2) {
+          popRes.value.tracks = await musicService.getArtistTopTracks(artists[1].provider_id, 15);
+        } else {
+          popRes = await Promise.allSettled([musicService.search('The Weeknd Dua Lipa Pop Hits')]).then(r => r[0]);
+        }
+
+        // Fallback genérico para a 3ª trilha usando as tags (ou buscar artista 3 se existir)
+        if (artists.length >= 3) {
+          chillRes.value.tracks = await musicService.getArtistTopTracks(artists[2].provider_id, 15);
+        } else {
+          const q3 = genres.length > 0 
+            ? `${genres[genres.length - 1].name} Lofi Chill Beats` 
+            : 'Lofi Chill Beats Study Synthwave';
+          chillRes = await Promise.allSettled([musicService.search(q3)]).then(r => r[0]);
+        }
+
+        const featuredRes = await Promise.allSettled([musicService.getFeaturedTracks()]).then(r => r[0]);
 
         if (mounted) {
           if (featuredRes.status === 'fulfilled') setFeaturedTracks(featuredRes.value);
@@ -275,8 +312,8 @@ export const HomePage: React.FC = () => {
           {(selectedFilter === 'all' || selectedFilter === 'trap') && !loading && trapTracks.length > 0 && (
             <section className="space-y-4">
               <SectionHeader
-                title="Trap & Rimas Urbanas"
-                subtitle="Graves 808 marcantes, flow afiado e as maiores produções nacionais"
+                title={userArtists.length > 0 ? `Baseado em ${userArtists[0].name}` : "Trap & Rimas Urbanas"}
+                subtitle={userArtists.length > 0 ? "Faixas inspiradas nos seus favoritos" : "Graves 808 marcantes, flow afiado e as maiores produções nacionais"}
                 icon={Flame}
                 tag="Em Alta"
               />
@@ -334,8 +371,8 @@ export const HomePage: React.FC = () => {
           {(selectedFilter === 'all' || selectedFilter === 'pop') && !loading && popTracks.length > 0 && (
             <section className="space-y-4">
               <SectionHeader
-                title="Pop & Sucessos Globais"
-                subtitle="Batidas contagiantes, vocais cintilantes e tendências internacionais"
+                title={userArtists.length > 1 ? `Mistura de ${userArtists[1].name}` : "Pop & Sucessos Globais"}
+                subtitle={userArtists.length > 1 ? "Recomendações fresquinhas baseadas no seu perfil" : "Batidas contagiantes, vocais cintilantes e tendências internacionais"}
                 icon={Radio}
                 hasScrollControls
                 onScrollLeft={() => setPopIndex((prev) => Math.max(0, prev - 4))}
@@ -367,8 +404,8 @@ export const HomePage: React.FC = () => {
           {(selectedFilter === 'all' || selectedFilter === 'chill') && !loading && chillTracks.length > 0 && (
             <section className="space-y-4">
               <SectionHeader
-                title="Sessão Lo-Fi & Foco Cósmico"
-                subtitle="Texturas orgânicas e sintetizadores analógicos para estudo e desaceleração"
+                title={userGenres.length > 0 ? `Vibe: ${userGenres[userGenres.length - 1].name}` : "Sessão Lo-Fi & Foco Cósmico"}
+                subtitle={userGenres.length > 0 ? "Sons relaxantes para o seu gênero favorito" : "Texturas orgânicas e sintetizadores analógicos para estudo e desaceleração"}
                 icon={Coffee}
                 hasScrollControls
                 onScrollLeft={() => setChillIndex((prev) => Math.max(0, prev - 4))}
@@ -400,19 +437,19 @@ export const HomePage: React.FC = () => {
           {(selectedFilter === 'all' || selectedFilter === 'artists') && (
             <section className="space-y-4">
               <SectionHeader
-                title="Artistas em Destaque no Radar"
-                subtitle="Os criadores e produtores mais ouvidos no ecossistema MooSic"
+                title={userArtists.length > 0 ? "Seus Artistas Favoritos" : "Artistas em Destaque no Radar"}
+                subtitle={userArtists.length > 0 ? "O núcleo do seu gosto musical" : "Os criadores e produtores mais ouvidos no ecossistema MooSic"}
                 icon={Users}
               />
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-4">
-                {FEATURED_ARTISTS.map((artist) => (
+                {(userArtists.length > 0 ? userArtists : FEATURED_ARTISTS).slice(0, 5).map((artist: any) => (
                   <ArtistCard
-                    key={artist.id}
-                    id={artist.id}
+                    key={artist.id || artist.provider_id}
+                    id={artist.id || artist.provider_id}
                     name={artist.name}
-                    genre={artist.genre}
-                    avatarUrl={artist.avatarUrl}
+                    genre={artist.genre || (userGenres.length > 0 ? userGenres[0].name : 'Favorito')}
+                    avatarUrl={artist.avatarUrl || artist.cover_url}
                     onClick={() => navigate(`/app/artist/${encodeURIComponent(artist.name)}`)}
                     onPlay={() => {
                       musicService.search(artist.name).then((res) => {

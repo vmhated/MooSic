@@ -54,9 +54,12 @@ export class HybridMusicProvider implements IMusicProvider {
   }
 
   async getArtist(id: string): Promise<Artist | null> {
-    const artist = await deezerMusicProvider.getArtist(id);
-    if (artist) return artist;
-    return iTunesMusicProvider.getArtist(id);
+    return deezerMusicProvider.getArtist(id);
+  }
+
+  async getArtistTopTracks(artistId: string, limit?: number): Promise<Track[]> {
+    // iTunes requires different id structure, so we just delegate to Deezer which is our main catalog
+    return deezerMusicProvider.getArtistTopTracks(artistId, limit);
   }
 
   /**

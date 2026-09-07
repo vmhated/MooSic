@@ -92,6 +92,24 @@ export class DeezerMusicProvider implements IMusicProvider {
   }
 
   /**
+   * Retrieves top tracks for a specific artist.
+   * Guarantees that tracks are by this artist.
+   */
+  async getArtistTopTracks(artistId: string, limit = 10): Promise<Track[]> {
+    const rawId = artistId.replace('deezer-', '').replace('dz-artist-', '');
+    try {
+      const url = `https://api.deezer.com/artist/${rawId}/top?limit=${limit}`;
+      const data = await this.fetchJsonp<any>(url);
+      if (data && data.data) {
+        return data.data.map((item: any, i: number) => DeezerAdapter.toDomainTrack(item, i));
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
    * Busca em todo o catálogo mundial e independente do Deezer (100+ milhões de faixas)
    */
   async search(query: string): Promise<SearchResults> {

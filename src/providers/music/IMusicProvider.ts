@@ -12,6 +12,11 @@ export interface IMusicProvider {
   getTrack(id: string): Promise<Track | null>;
   getAlbum(id: string): Promise<Album | null>;
   getArtist(id: string): Promise<Artist | null>;
+  
+  // Catálogo Específico
+  getArtistTopTracks(artistId: string, limit?: number): Promise<Track[]>;
+
+  // Busca
   search(query: string): Promise<SearchResults>;
   searchArtists(query: string): Promise<Artist[]>;
   searchAlbums(query: string): Promise<Album[]>;

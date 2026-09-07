@@ -59,8 +59,23 @@ export class ITunesMusicProvider implements IMusicProvider {
     return mockMusicProvider.getArtist(id);
   }
 
+  async getArtistTopTracks(artistId: string, limit = 10): Promise<Track[]> {
+    const rawId = artistId.replace('itunes-', '').replace('itunes-artist-', '');
+    try {
+      const url = `https://itunes.apple.com/lookup?id=${rawId}&entity=song&limit=${limit}`;
+      const data = await this.fetchJson<any>(url);
+      if (data && data.results) {
+        const songs = data.results.filter((r: any) => r.wrapperType === 'track');
+        return songs.map((item: any, i: number) => ITunesAdapter.toDomainTrack(item, i));
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
   /**
-   * Busca instantânea sem limites de taxa, retornando músicas, artistas e capas 600x600bb
+   * Busca multi-critério global no catálogo da Apple Music
    */
   async search(query: string): Promise<SearchResults> {
     const clean = query.trim();

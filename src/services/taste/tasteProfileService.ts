@@ -1,6 +1,7 @@
 import { TasteProfile, TasteEntity, SignalSource } from '@/types/domain/taste';
 import { tasteProfileRepository } from '@/repositories/taste/tasteProfileRepository';
 import { Artist, Track } from '@/types/domain/music';
+import { musicBrainzProvider } from '@/providers/music/musicBrainzProvider';
 
 /**
  * Service to orchestrate taste profile operations.
@@ -46,7 +47,28 @@ export class TasteProfileService {
       source,
       confidence: 1.0,
       added_at: new Date().toISOString(),
+      tags: artist.genres || [],
     };
+  }
+
+  /**
+   * Enriches an existing TasteEntity with deep cultural tags from MusicBrainz.
+   */
+  public async enrichArtistEntity(entity: TasteEntity): Promise<TasteEntity> {
+    try {
+      const { tags, culture } = await musicBrainzProvider.getArtistCulturalTags(entity.name);
+      
+      const mergedTags = new Set(entity.tags || []);
+      tags.forEach(t => mergedTags.add(t));
+
+      return {
+        ...entity,
+        tags: Array.from(mergedTags),
+        culture: culture || entity.culture
+      };
+    } catch {
+      return entity;
+    }
   }
 
   public trackToTasteEntity(track: Track, source: SignalSource = 'declared'): TasteEntity {

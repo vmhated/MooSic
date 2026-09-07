@@ -90,6 +90,10 @@ export class MusicBrainzProvider implements IMusicProvider {
     return mockMusicProvider.getArtist(id);
   }
 
+  async getArtistTopTracks(_artistId: string, _limit?: number): Promise<Track[]> {
+    return [];
+  }
+
   /**
    * Busca avançada multi-termo para artistas, bandas e faixas com desduplicação
    */
@@ -132,6 +136,34 @@ export class MusicBrainzProvider implements IMusicProvider {
 
   async searchArtists(_query: string): Promise<Artist[]> {
     return [];
+  }
+
+  /**
+   * Retrieves deep cultural and style tags for an artist.
+   * Returns an array of tags (e.g. 'synthpop', 'manguebeat') and an optional culture/area (e.g. 'Brazil').
+   */
+  async getArtistCulturalTags(artistName: string): Promise<{ tags: string[]; culture?: string }> {
+    const clean = artistName.trim();
+    if (!clean) return { tags: [] };
+
+    try {
+      const url = `${env.musicBrainzUrl}/artist?query=${encodeURIComponent(clean)}&limit=1&fmt=json`;
+      const data = await this.fetchJson<any>(url);
+      
+      const artist = data?.artists?.[0];
+      if (!artist) return { tags: [] };
+
+      const tags = (artist.tags || [])
+        .map((t: any) => t.name?.toLowerCase())
+        .filter(Boolean)
+        .slice(0, 5); // top 5 tags
+
+      const culture = artist.area?.name || artist.country || undefined;
+
+      return { tags, culture };
+    } catch {
+      return { tags: [] };
+    }
   }
 
   async searchAlbums(_query: string): Promise<Album[]> {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useOnboarding } from '../../stores/OnboardingContext';
 import { musicService } from '@/services/music/musicService';
+import { tasteProfileService } from '@/services/taste/tasteProfileService';
 import { Artist } from '@/types/domain/music';
 import { Search, Check, X } from 'lucide-react';
 
@@ -117,8 +118,22 @@ export const ArtistPicker: React.FC = () => {
       } else {
         const entity = service.artistToTasteEntity(artist, 'declared');
         updateDraft({ favorite_artists: [...selectedArtists, entity] });
+        
         // Trigger related artist injection
         fetchAndInjectRelated(artist);
+
+        // Async enrich with cultural tags from MusicBrainz
+        tasteProfileService.enrichArtistEntity(entity).then(enriched => {
+          updateDraft(prev => {
+            const currentArtists = prev.favorite_artists || [];
+            // Replace the old entity with the enriched one
+            return {
+              favorite_artists: currentArtists.map(a => 
+                a.provider_id === enriched.provider_id ? enriched : a
+              )
+            };
+          });
+        });
       }
     },
     [isSelected, selectedArtists, updateDraft, service, fetchAndInjectRelated]

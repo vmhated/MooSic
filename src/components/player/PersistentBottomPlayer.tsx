@@ -20,6 +20,8 @@ import {
   Radio,
   SlidersHorizontal,
   Mic2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 
 function hexToRgb(hex?: string): { r: number; g: number; b: number } {
@@ -69,6 +71,7 @@ export const PersistentBottomPlayer: React.FC = () => {
   const [showQueue, setShowQueue] = useState(false);
   const [showAudioProfile, setShowAudioProfile] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [audioProfile, setAudioProfile] = useState<'hifi' | 'spatial' | 'pure'>('spatial');
 
   // Geração de 32 barras de espectro animadas ao ritmo da música
@@ -132,18 +135,53 @@ export const PersistentBottomPlayer: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-3 sm:bottom-5 inset-x-3 sm:inset-x-6 lg:inset-x-8 z-50 max-w-5xl mx-auto select-none pointer-events-none">
-      {/* 1. HALO VOLUMÉTRICO EXTERNO BASEADO NA ARTE DO ÁLBUM */}
-      <div
-        className="absolute -inset-2 rounded-full blur-3xl opacity-50 transition-all duration-700 pointer-events-none"
-        style={{
-          background: `radial-gradient(ellipse at 50% 80%, rgba(${r}, ${g}, ${b}, 0.7) 0%, rgba(${r2}, ${g2}, ${b2}, 0.35) 45%, transparent 75%)`,
-        }}
-      />
+    <div className="fixed bottom-3 sm:bottom-5 inset-x-3 sm:inset-x-6 lg:inset-x-8 z-50 max-w-5xl mx-auto select-none pointer-events-none flex flex-col justify-end">
+      {/* 0. MINI PLAYER (Quando minimizado) */}
+      <AnimatePresence>
+        {isMinimized && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.8 }}
+            className="absolute bottom-0 right-0 sm:right-0 z-[60] pointer-events-auto"
+          >
+            <button
+              onClick={() => setIsMinimized(false)}
+              className="flex items-center gap-3 p-1.5 pr-4 rounded-full bg-[#0e0e14]/90 backdrop-blur-3xl border shadow-2xl hover:scale-105 active:scale-95 transition-all group"
+              style={{ borderColor: `rgba(${r}, ${g}, ${b}, 0.4)`, boxShadow: `0 10px 30px rgba(${r}, ${g}, ${b}, 0.2)` }}
+              title="Expandir Player"
+            >
+               <div className={`w-10 h-10 rounded-full overflow-hidden p-[2px]`} style={{ background: `conic-gradient(from 0deg, ${accentHex}, rgb(${r2},${g2},${b2}), #EC4899, ${accentHex})` }}>
+                 <div className={`w-full h-full rounded-full overflow-hidden ${isPlaying ? 'animate-spin' : ''}`} style={{ animationDuration: '7s' }}>
+                   <img src={currentTrack.coverUrl} className="w-full h-full object-cover" alt="Cover" />
+                 </div>
+               </div>
+               <div className="flex flex-col text-left mr-1 max-w-[120px]">
+                 <span className="text-[9px] text-brand-light font-black uppercase tracking-widest leading-none mb-1">Tocando</span>
+                 <span className="text-xs font-bold text-white truncate leading-none">{currentTrack.title}</span>
+               </div>
+               <ChevronUp className="w-4 h-4 text-text-muted group-hover:text-white transition-colors ml-1" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* 2. CÁPSULA COM DEGRADÊ DE CORES DINÂMICO BASEADO NA CAPA */}
-      <div
-        className="relative rounded-3xl sm:rounded-full backdrop-blur-3xl p-3 sm:px-6 sm:py-3 pointer-events-auto transition-all duration-500 shadow-2xl"
+      <motion.div
+        animate={{ y: isMinimized ? 150 : 0, opacity: isMinimized ? 0 : 1, pointerEvents: isMinimized ? 'none' : 'auto' }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className="w-full relative"
+      >
+        {/* 1. HALO VOLUMÉTRICO EXTERNO BASEADO NA ARTE DO ÁLBUM */}
+        <div
+          className="absolute -inset-2 rounded-full blur-3xl opacity-50 transition-all duration-700 pointer-events-none"
+          style={{
+            background: `radial-gradient(ellipse at 50% 80%, rgba(${r}, ${g}, ${b}, 0.7) 0%, rgba(${r2}, ${g2}, ${b2}, 0.35) 45%, transparent 75%)`,
+          }}
+        />
+
+        {/* 2. CÁPSULA COM DEGRADÊ DE CORES DINÂMICO BASEADO NA CAPA */}
+        <div
+          className="relative rounded-3xl sm:rounded-full backdrop-blur-3xl p-3 sm:px-6 sm:py-3 pointer-events-auto transition-all duration-500 shadow-2xl"
         style={{
           background: `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, 0.32) 0%, rgba(14, 14, 20, 0.94) 45%, rgba(${r2}, ${g2}, ${b2}, 0.22) 100%)`,
           border: `1.5px solid rgba(${r}, ${g}, ${b}, 0.45)`,
@@ -492,9 +530,19 @@ export const PersistentBottomPlayer: React.FC = () => {
                 style={{ accentColor: accentHex }}
               />
             </div>
+
+            {/* Minimizar Player */}
+            <button
+              onClick={() => setIsMinimized(true)}
+              className="p-2 ml-1 rounded-full text-text-muted hover:text-white hover:bg-white/10 transition-all border border-transparent hover:border-white/10"
+              title="Minimizar Player"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
+      </motion.div>
 
       {/* ================= MODAL DE PERFIL DE ÁUDIO ESPACIAL ================= */}
       <AnimatePresence>

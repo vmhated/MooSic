@@ -57,15 +57,18 @@ export class MockMusicProvider implements IMusicProvider {
   }
 
   async getArtist(id: string): Promise<Artist | null> {
-    const track = this.tracks.find((t) => t.artistId === id);
-    if (!track) return null;
     return {
-      id: `mock-${track.artistId}`,
-      name: track.artistName,
-      genres: [track.genre || 'Music'],
+      id,
       providerId: 'mock',
-      providerArtistId: track.artistId,
+      providerArtistId: id,
+      name: 'Artista Mock',
+      genres: ['Pop'],
+      avatarUrl: 'https://via.placeholder.com/300',
     };
+  }
+
+  async getArtistTopTracks(_artistId: string, _limit?: number): Promise<Track[]> {
+    return this.getFeaturedTracks();
   }
 
   async search(query: string): Promise<SearchResults> {
