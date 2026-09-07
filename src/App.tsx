@@ -12,14 +12,28 @@ import { useEffect } from 'react';
  */
 function MainRouterOutlet() {
   const { isApp, route, navigate } = useRouter();
-  const { isAuthenticated, isLoading, openAuthModal } = useAuth();
+  const { isAuthenticated, isLoading, user, openAuthModal } = useAuth();
 
+  // Guard 1: Usuário não autenticado tenta acessar rota protegida
   useEffect(() => {
     if (!isLoading && isApp && !isAuthenticated) {
       navigate('/');
       openAuthModal('login');
     }
   }, [isLoading, isApp, isAuthenticated, navigate, openAuthModal]);
+
+  // Guard 2: Usuário autenticado com onboarding pendente é redirecionado para /app/welcome
+  // Funciona para contas novas E contas existentes que nunca fizeram o onboarding.
+  useEffect(() => {
+    if (
+      !isLoading &&
+      isAuthenticated &&
+      user?.onboarding_status === 'not_started' &&
+      route !== 'app-welcome'
+    ) {
+      navigate('/app/welcome');
+    }
+  }, [isLoading, isAuthenticated, user?.onboarding_status, route, navigate]);
 
   useEffect(() => {
     if (route === 'reset-password' && !isLoading) {
@@ -41,6 +55,7 @@ function MainRouterOutlet() {
 
   return <LandingPage />;
 }
+
 
 export default function App() {
   return (

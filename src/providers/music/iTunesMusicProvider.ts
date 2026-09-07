@@ -94,11 +94,16 @@ export class ITunesMusicProvider implements IMusicProvider {
       const data = await this.fetchJson<any>(url);
       
       if (data && data.results && data.results.length > 0) {
-        return data.results.map((item: any) => ({
-          id: `itunes-artist-${item.artistId}`,
-          name: item.artistName,
-          genres: [item.primaryGenreName].filter(Boolean),
-        }));
+        return data.results.map((item: any) => {
+          const providerArtistId = String(item.artistId);
+          return {
+            id: `itunes-${providerArtistId}`,
+            name: item.artistName,
+            genres: [item.primaryGenreName].filter(Boolean),
+            providerId: 'itunes',
+            providerArtistId,
+          };
+        });
       }
       return [];
     } catch {

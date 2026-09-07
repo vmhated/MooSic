@@ -38,7 +38,15 @@ export class TasteProfileService {
   }
 
   public artistToTasteEntity(artist: Artist, source: SignalSource = 'declared'): TasteEntity {
-    return this.toTasteEntity(artist.id, artist.name, artist.avatarUrl, source, 1.0);
+    return {
+      provider: artist.providerId,
+      provider_id: artist.providerArtistId,
+      name: artist.name,
+      cover_url: artist.avatarUrl,
+      source,
+      confidence: 1.0,
+      added_at: new Date().toISOString(),
+    };
   }
 
   public trackToTasteEntity(track: Track, source: SignalSource = 'declared'): TasteEntity {

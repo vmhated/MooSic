@@ -2,6 +2,9 @@ import React from 'react';
 import { useOnboarding } from '../stores/OnboardingContext';
 import { WelcomeStep } from './steps/WelcomeStep';
 import { ArtistPicker } from './steps/ArtistPicker';
+import { GenrePicker } from './steps/GenrePicker';
+import { DiscoveryStylePicker } from './steps/DiscoveryStylePicker';
+import { ProfileReveal } from './steps/ProfileReveal';
 
 export const OnboardingShell: React.FC = () => {
   const { currentStep, isRestored } = useOnboarding();
@@ -20,13 +23,14 @@ export const OnboardingShell: React.FC = () => {
         return <WelcomeStep />;
       case 'artist_selection':
         return <ArtistPicker />;
-      // Adicionaremos os próximos steps aqui conforme a máquina evoluir
+      case 'genre_selection':
+        return <GenrePicker />;
+      case 'discovery_style':
+        return <DiscoveryStylePicker />;
+      case 'profile_reveal':
+        return <ProfileReveal />;
       default:
-        return (
-          <div className="flex flex-col items-center justify-center h-full text-white">
-            <h1 className="text-2xl font-bold">Em construção: {currentStep}</h1>
-          </div>
-        );
+        return null;
     }
   };
 

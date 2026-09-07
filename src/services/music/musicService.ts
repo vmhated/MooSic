@@ -61,6 +61,44 @@ export class MusicService {
     return this.activeProvider.searchAlbums(query);
   }
 
+  /**
+   * Derives real genres from track search results for an artist.
+   * Does NOT use a static genre catalog — all data comes from real provider responses.
+   */
+  public async getArtistGenres(artistName: string): Promise<string[]> {
+    const results = await this.activeProvider.search(artistName);
+    const genreFreq: Record<string, number> = {};
+
+    for (const track of results.tracks) {
+      const g = track.genre;
+      if (g && g.trim() && g !== 'Global Sound') {
+        genreFreq[g] = (genreFreq[g] || 0) + 1;
+      }
+    }
+
+    return Object.entries(genreFreq)
+      .sort((a, b) => b[1] - a[1])
+      .map(([genre]) => genre);
+  }
+
+  /**
+   * Returns real chart artists from Deezer's global trending endpoint.
+   * No guessing — these are the actual top artists worldwide right now.
+   */
+  public async getFeaturedArtists(): Promise<Artist[]> {
+    return deezerMusicProvider.getChartArtists(25);
+  }
+
+  /**
+   * Returns artists editorially related to a given artist.
+   * Only works when the artist comes from Deezer (has a deezer providerArtistId).
+   * Falls back to empty array for other providers.
+   */
+  public async getRelatedArtists(artist: { provider: string; providerArtistId: string }): Promise<Artist[]> {
+    if (artist.provider !== 'deezer') return [];
+    return deezerMusicProvider.getRelatedArtists(artist.providerArtistId);
+  }
+
   public async getFeaturedTracks(): Promise<Track[]> {
     return this.activeProvider.getFeaturedTracks();
   }

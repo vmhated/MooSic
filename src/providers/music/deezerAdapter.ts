@@ -80,13 +80,15 @@ export class DeezerAdapter {
   static toDomainArtist(item: any): Artist {
     const name = item.name || 'Artista Desconhecido';
     const picture = item.picture_xl || item.picture_big || item.picture_medium || '';
-    const hash = getStableHash(name);
+    const artistId = String(item.id || getStableHash(name));
 
     return {
-      id: `deezer-${item.id || hash}`,
+      id: `deezer-${artistId}`,
       name,
       avatarUrl: picture,
-      genres: [], // Deezer search/artist doesn't return genres directly in the list
+      genres: [],
+      providerId: 'deezer',
+      providerArtistId: artistId,
     };
   }
 

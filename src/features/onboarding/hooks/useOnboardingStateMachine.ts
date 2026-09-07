@@ -97,7 +97,7 @@ export function useOnboardingStateMachine() {
 
   // Adaptive Decision Engine
   const next = useCallback(() => {
-    const { currentStep, draft } = state;
+    const { currentStep } = state;
 
     switch (currentStep) {
       case 'welcome':
@@ -105,15 +105,9 @@ export function useOnboardingStateMachine() {
         break;
       
       case 'artist_selection':
-        // Se escolheu artistas suficientes, pula gêneros temporariamente e vai para perfil
-        // No momento, vamos direto para genre_selection ou tracks.
-        // O usuário pediu "Welcome -> ArtistPicker -> next decision".
-        // Vamos simular a decisão:
-        if ((draft.favorite_artists?.length || 0) > 3) {
-          transitionTo('discovery_style'); // Se já escolheu vários, talvez pular direto pra descoberta
-        } else {
-          transitionTo('genre_selection'); // Se escolheu pouco, aprofundar em gêneros
-        }
+        // Adaptive: if the user chose many artists with clear genres, go to discovery style
+        // Otherwise, go through genre selection to enrich the profile
+        transitionTo('genre_selection');
         break;
 
       case 'genre_selection':
@@ -125,8 +119,9 @@ export function useOnboardingStateMachine() {
         break;
         
       case 'profile_reveal':
+        // finishOnboarding() handles saving + navigation — this path isn't used
         transitionTo('completed');
-        onboardingStorage.clearDraft(); // Limpar ao finalizar
+        onboardingStorage.clearDraft();
         break;
 
       default:

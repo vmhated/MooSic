@@ -3,12 +3,14 @@
  */
 
 export interface Artist {
-  id: string;
+  id: string; // Composite: `{providerId}-{providerArtistId}`
   name: string;
   avatarUrl?: string;
   bannerUrl?: string;
   bio?: string;
   genres: string[];
+  providerId: string;       // e.g. 'deezer' | 'itunes' | 'mock'
+  providerArtistId: string; // e.g. '12345'
 }
 
 export interface Album {

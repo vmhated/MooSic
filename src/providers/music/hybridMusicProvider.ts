@@ -138,10 +138,36 @@ export class HybridMusicProvider implements IMusicProvider {
   }
 
   async searchArtists(query: string): Promise<Artist[]> {
-    const itunesRes = await iTunesMusicProvider.searchArtists(query);
-    if (itunesRes.length > 0) return itunesRes;
-    
-    return deezerMusicProvider.searchArtists(query);
+    const clean = query.trim();
+    if (!clean) return [];
+
+    // Run both in parallel: Deezer has images, iTunes has genres
+    const [deezerResult, itunesResult] = await Promise.allSettled([
+      deezerMusicProvider.searchArtists(clean),
+      iTunesMusicProvider.searchArtists(clean),
+    ]);
+
+    const deezerArtists = deezerResult.status === 'fulfilled' ? deezerResult.value : [];
+    const itunesArtists = itunesResult.status === 'fulfilled' ? itunesResult.value : [];
+
+    // Merge: use Deezer as primary (has images), enrich with iTunes genres
+    const mergedMap = new Map<string, Artist>();
+    for (const a of deezerArtists) {
+      mergedMap.set(a.name.toLowerCase(), a);
+    }
+    for (const a of itunesArtists) {
+      const key = a.name.toLowerCase();
+      const existing = mergedMap.get(key);
+      if (existing) {
+        // Enrich Deezer artist with iTunes genre data
+        mergedMap.set(key, { ...existing, genres: [...new Set([...existing.genres, ...a.genres])] });
+      } else {
+        // Artist only on iTunes (no image, but valid result)
+        mergedMap.set(key, a);
+      }
+    }
+
+    return Array.from(mergedMap.values()).slice(0, 20);
   }
 
   async searchAlbums(query: string): Promise<Album[]> {

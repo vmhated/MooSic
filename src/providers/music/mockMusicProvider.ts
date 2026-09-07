@@ -60,9 +60,11 @@ export class MockMusicProvider implements IMusicProvider {
     const track = this.tracks.find((t) => t.artistId === id);
     if (!track) return null;
     return {
-      id: track.artistId,
+      id: `mock-${track.artistId}`,
       name: track.artistName,
       genres: [track.genre || 'Music'],
+      providerId: 'mock',
+      providerArtistId: track.artistId,
     };
   }
 
@@ -84,14 +86,15 @@ export class MockMusicProvider implements IMusicProvider {
     const matched = this.tracks
       .filter((t) => t.artistName.toLowerCase().includes(q))
       .map((t) => ({
-        id: t.artistId,
+        id: `mock-${t.artistId}`,
         name: t.artistName,
         genres: [t.genre || 'Music'],
+        providerId: 'mock' as const,
+        providerArtistId: t.artistId,
       }));
     
-    // Desduplicar mock artists
     const unique = new Map<string, Artist>();
-    matched.forEach(a => unique.set(a.id, a));
+    matched.forEach(a => unique.set(a.providerArtistId, a));
     return Array.from(unique.values());
   }
 

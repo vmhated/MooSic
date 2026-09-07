@@ -133,7 +133,41 @@ export class DeezerMusicProvider implements IMusicProvider {
   }
 
   async searchAlbums(_query: string): Promise<Album[]> {
-    return []; // Optional for now, can implement later
+    return [];
+  }
+
+  /**
+   * Returns the real global Deezer chart artists (top trending worldwide).
+   * Uses /chart/0/artists — no guessing, no fake popular artists.
+   */
+  async getChartArtists(limit = 25): Promise<Artist[]> {
+    const url = `https://api.deezer.com/chart/0/artists?limit=${limit}`;
+    try {
+      const data = await this.fetchJsonp<any>(url, 4000);
+      if (data && data.data && data.data.length > 0) {
+        return data.data.map((item: any) => DeezerAdapter.toDomainArtist(item));
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Returns artists similar to a given Deezer artist ID.
+   * Uses /artist/{id}/related — real Deezer editorial similarity.
+   */
+  async getRelatedArtists(deezerArtistId: string, limit = 6): Promise<Artist[]> {
+    const url = `https://api.deezer.com/artist/${deezerArtistId}/related?limit=${limit}`;
+    try {
+      const data = await this.fetchJsonp<any>(url, 4000);
+      if (data && data.data && data.data.length > 0) {
+        return data.data.map((item: any) => DeezerAdapter.toDomainArtist(item));
+      }
+      return [];
+    } catch {
+      return [];
+    }
   }
 
   async getFeaturedTracks(): Promise<Track[]> {
